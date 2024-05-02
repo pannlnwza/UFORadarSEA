@@ -1,3 +1,4 @@
+import os
 import tkinter as tk
 import matplotlib.pyplot as plt
 import tkinter.messagebox
@@ -7,6 +8,7 @@ from graph_generator import GraphGenerator
 from tkcalendar import DateEntry
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from uforadar_dataprocessor import UFODataProcessor
+from PIL import Image, ImageTk
 
 
 class MapPage(tk.Frame):
@@ -15,11 +17,12 @@ class MapPage(tk.Frame):
         self.parent = parent
         self.data_processor = data_processor
         self.data = self.data_processor.get_ufo_data()
+        self.MARKER_ICON = ImageTk.PhotoImage(Image.open(os.path.join(os.getcwd(), 'images', 'marker_icon.png')).resize((40, 40)))
         self.init_components()
 
     def init_components(self):
         map_frame = ttk.Frame(self, borderwidth=2, relief="groove")
-        map_frame.grid(row=0, column=0, rowspan=2, padx=5, pady=5, sticky="nsew")
+        map_frame.grid(row=0, column=0, rowspan=2, padx=5, pady=5, sticky=tk.NSEW)
 
         # Map view
         self.map_view = TkinterMapView(map_frame, width=600, height=500)
@@ -144,21 +147,24 @@ class MapPage(tk.Frame):
 
     def update_map_markers(self, filtered_data):
         # Clear existing markers
-        self.map_view.delete_all_marker()
-
+        self.delete_markers()
         # Add new markers based on filtered data
         for index, row in filtered_data.iterrows():
             latitude = float(row['latitude'])
             longitude = float(row['longitude'])
             shape = row['UFO_shape']
-            self.map_view.set_marker(latitude, longitude, text=shape)
+            self.map_view.set_marker(latitude, longitude, text=shape, icon=self.MARKER_ICON)
+
+    def delete_markers(self):
+        for marker in self.map_view.canvas_marker_list.copy():
+            marker.delete()
 
     def add_sighting_markers(self):
         for index, row in self.data.iterrows():
             latitude = float(row['latitude'])
             longitude = float(row['longitude'])
-            shape = row['UFO_shape']
-            self.map_view.set_marker(latitude, longitude, text=shape)
+            self.map_view.set_marker(latitude, longitude, icon=self.MARKER_ICON)
+
 
     def show_result_details(self, event):
         # Get the selected item from the results listbox
@@ -171,15 +177,14 @@ class MapPage(tk.Frame):
             report_no = report_no.split(" ")[2]
             # Get the filtered data for the selected item
             filtered_data = self.data[(self.data['report_no'] == int(report_no))]
-            print(filtered_data.iloc[0]['latitude'])
             # Switch to the page with full information about the selected result
             self.show_full_information_page(filtered_data)
-
-            # Update map marker to show the selected result marker and zoom to it
             self.update_map_markers(filtered_data)
 
             self.map_view.set_position(filtered_data.iloc[0]['latitude'], filtered_data.iloc[0]['longitude'])
             self.map_view.set_zoom(10)
+
+            # Update map marker to show the selected result marker and zoom to it
 
     def show_full_information_page(self, filtered_data):
         # Create a new frame to display full information about the selected result
@@ -447,8 +452,7 @@ class ReportPage(tk.Frame):
     def left_click_event(self, coordinates_tuple):
         self.lat_input.set(coordinates_tuple[0])
         self.long_input.set(coordinates_tuple[1])
-
-
+        print(coordinates_tuple)
 
     def submit_report(self):
         date_time_found = self.date_entry.get_date()
@@ -459,23 +463,24 @@ class ReportPage(tk.Frame):
         ufo_shape = self.ufo_shape_entry.get()
         length_of_encounter_seconds = self.length_of_encounter_entry.get()
         description = self.description_entry.get("1.0", tk.END)
-
-        # Process the report data here (e.g., save to file, send to database, etc.)
-        # Replace this with your desired action
-        print(date_time_found, country, location, latitude, longitude, ufo_shape, length_of_encounter_seconds, description)
-        tk.messagebox.showinfo('Report submitted', 'Report submitted successfully!')
+        if "" in [date_time_found, country, location, latitude, longitude, ufo_shape, length_of_encounter_seconds, description]:
+            tk.messagebox.showwarning('Please fill the missing boxes.', 'Please enter all the information.')
+        else:
+            tk.messagebox.showinfo('Report submitted', 'Report submitted successfully!')
 
 
 class App(tk.Tk):
     def __init__(self, data_processor: UFODataProcessor):
         super().__init__()
+        icon = ImageTk.PhotoImage(Image.open(os.path.join(os.getcwd(), 'images', 'marker_icon.png')).resize((40, 40)))
+        self.wm_iconphoto(False, icon)
         self.title('UFORadarSEA')
         self.data_processor = data_processor
         self.init_components()
 
     def init_components(self):
         self.main_menu = tk.Frame(self)
-        title_label = ttk.Label(self.main_menu, text="UFORadarSEA", font=("Helvetica", 24), padding=(0, 20))
+        title_label = ttk.Label(self.main_menu, text="UFORadarSEA", font=("Comic Sans MS", 24), padding=(0, 20))
         title_label.grid(row=0, column=0, columnspan=3)
         view_map_button = tk.Button(self.main_menu, text="View Map", height=2, width=7, command=self.show_map_page)
         view_map_button.grid(row=1, column=0, padx=5, pady=10)
@@ -525,7 +530,6 @@ class App(tk.Tk):
         self.user_create_graph_page.pack(expand=True, fill=tk.BOTH)
         self.back_button = tk.Button(self.user_create_graph_page, text='Back to Graphs', command=self.show_graphs_page)
         self.back_button.grid(row=9, column=0, sticky=tk.W)
-
 
     def run(self):
         self.mainloop()
