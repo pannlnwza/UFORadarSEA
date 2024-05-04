@@ -91,13 +91,17 @@ class GraphGenerator:
         :param color: The color of the markers.
         :return: The figure and axis objects.
         """
+        plt.tight_layout()
         fig, ax = plt.subplots()
         if y_column is None:
             y_column = self.data[x_column].value_counts().index
             counts = self.data[x_column].value_counts().sort_index()
-            ax.scatter(counts.index, counts.values, color=color)
+            ax.scatter(counts.index, counts.values, c=color[0])
         else:
-            ax.scatter(self.data[x_column], self.data[y_column], color=color)
+            ax.scatter(self.data[x_column], self.data[y_column], c=color[0])
+            ax.spines['left'].set_color(color[1])
+
+        ax.spines['bottom'].set_color(color[0])
         ax.set_title(title)
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
@@ -139,6 +143,7 @@ class GraphGenerator:
         ax.set_title('Top 5 Cities with the Most Reports')
         ax.set_xlabel('City')
         ax.set_ylabel('Number of Reports')
+        plt.xticks(rotation=15)
         return fig, ax
 
     def generate_pie_chart_ufo_shape(self, column, title):
@@ -160,7 +165,7 @@ class GraphGenerator:
         fig, ax = plt.subplots()
         wedges, _, autotexts = ax.pie(count, autopct=autopct_more_than_4, startangle=90)
         plt.legend(wedges, labels_with_percentage, loc='center right',
-                   bbox_to_anchor=(2, 0.5), ncol=2)
+                   bbox_to_anchor=(2.15, 0.5), ncol=2)
         plt.tight_layout()
         ax.set_title(title)
         return fig, ax
