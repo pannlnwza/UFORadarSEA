@@ -1,5 +1,5 @@
 # UFORadarSEA
-This is a preview release of the application.
+This is a preview release of the UFORadarSEA application.
 ## Overview
 The UFO Radar Application is a Python GUI application that allows users to explore UFO sighting reports from South East Asia.
 
