@@ -4,6 +4,7 @@ import tkinter as tk
 import matplotlib.pyplot as plt
 from tkinter import ttk, messagebox
 import pandas as pd
+import numpy as np
 from tkintermapview import TkinterMapView
 from graph_generator import GraphGenerator
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -319,40 +320,43 @@ class GraphsPage(tk.Frame):
         """
         # Histogram Frame
         histogram_frame = tk.LabelFrame(self, text='Histogram')
-        histogram_frame.grid(row=0, column=0, padx=10, pady=5, sticky=tk.NSEW)
+        histogram_frame.grid(row=0, column=0, padx=10, pady=2, sticky=tk.NSEW)
         self.histogram_canvas = tk.Canvas(histogram_frame)
         self.histogram_canvas.grid(row=0, column=0, padx=10)
 
         histogram_frame2 = tk.LabelFrame(self, text='Histogram')
-        histogram_frame2.grid(row=0, column=1, padx=10, pady=5, sticky=tk.NSEW)
+        histogram_frame2.grid(row=0, column=1, padx=10, pady=2, sticky=tk.NSEW)
         self.histogram_canvas2 = tk.Canvas(histogram_frame2)
         self.histogram_canvas2.grid(row=0, column=1, padx=10)
 
         # Scatter Plot Frame
-        scatter_plot_frame = tk.LabelFrame(self, text='Scatter Plot')
-        scatter_plot_frame.grid(row=1, column=1, padx=10, pady=5, sticky=tk.NSEW)
-        self.scatter_plot_canvas = tk.Canvas(scatter_plot_frame, width=400, height=300)
+        scatter_plot_frame = tk.LabelFrame(self,
+                                           text='Scatter Plot of Length of Encounter and Distance to nearest airport')
+        scatter_plot_frame.grid(row=3, column=1, padx=10, pady=2, sticky=tk.NSEW)
+        self.scatter_plot_canvas = tk.Canvas(scatter_plot_frame, width=300, height=300)
         self.scatter_plot_canvas.pack()
 
         # Pie Graph Frame
-        pie_graph_frame = tk.LabelFrame(self, text='Pie Graph')
-        pie_graph_frame.grid(row=3, column=0, columnspan=2, padx=10, pady=5, sticky=tk.NSEW)
+        pie_graph_frame = tk.LabelFrame(self, text='Pie Chart of different reported UFO shapes (UFO_shape).')
+        pie_graph_frame.grid(row=3, column=0, padx=10, pady=2, sticky=tk.NSEW)
         self.pie_graph_canvas = tk.Canvas(pie_graph_frame, width=400, height=300)
         self.pie_graph_canvas.pack()
 
         # Bar Graph Frame
         bar_graph_frame = tk.LabelFrame(self, text='Bar Graph')
-        bar_graph_frame.grid(row=1, column=1, padx=10, pady=5, sticky=tk.NSEW)
+        bar_graph_frame.grid(row=1, column=1, padx=10, pady=2, sticky=tk.NSEW)
         self.bar_graph_canvas = tk.Canvas(bar_graph_frame, width=400, height=300)
         self.bar_graph_canvas.pack()
 
-
         # Line Graph Frame
         line_graph_frame = tk.LabelFrame(self, text='Line Graph')
-        line_graph_frame.grid(row=1, column=0, padx=10, pady=5, sticky=tk.NSEW)
-        self.line_graph_canvas = tk.Canvas(line_graph_frame, width=800, height=400)
+        line_graph_frame.grid(row=1, column=0, padx=10, pady=2, sticky=tk.NSEW)
+
+        self.line_graph_canvas = tk.Canvas(line_graph_frame, width=400, height=300)
         self.line_graph_canvas.pack(expand=True)
 
+        popup_button = ttk.Button(self, text="Summary Statistics", command=self.open_popup)
+        popup_button.grid(row=4, column=0, sticky=tk.W, padx=330, columnspan=2)
         self.create_and_display_graphs()
 
         # Configure grid weights
@@ -363,6 +367,46 @@ class GraphsPage(tk.Frame):
         self.rowconfigure(2, weight=1)
         self.rowconfigure(3, weight=1)
 
+    def open_popup(self):
+        """
+        Opens a popup window to display summary statistics for numerical attributes.
+        """
+        popup_window = tk.Toplevel(self)
+        popup_window.title("Summary Statistic")
+
+        popup_label = ttk.Label(popup_window, text="Choose a numerical attribute:")
+        popup_label.pack()
+
+        self.column_var = tk.StringVar()
+        column_combobox = ttk.Combobox(popup_window, textvariable=self.column_var)
+        column_combobox.pack()
+        column_combobox['values'] = self.get_numerical_columns()
+
+        column_combobox.bind("<<ComboboxSelected>>", self.display_statistics)
+
+        self.statistics_label = ttk.Label(popup_window, text="")
+        self.statistics_label.pack()
+
+    def display_statistics(self, event):
+        """
+        Displays summary statistics for the selected numerical attribute.
+        """
+        selected_column = self.column_var.get()
+        if selected_column:
+            self.statistics_label.config(text=self.calculate_statistics(selected_column))
+
+    def get_numerical_columns(self):
+        """
+        :returns: a list of numerical column names from the DataFrame.
+        """
+        return self.data.select_dtypes(include='float').columns.tolist()
+
+    def calculate_statistics(self, column):
+        """
+        Calculates summary statistics for a given column in the DataFrame.
+        """
+        return self.data[column].describe().to_string()
+
     def create_and_display_graphs(self):
         """
         Create and display graphs.
@@ -372,7 +416,7 @@ class GraphsPage(tk.Frame):
                                                                 ylabel='Frequency',
                                                                 title='Distribution of Encounter Durations',
                                                                 color='skyblue')
-        fig_hist1.set_size_inches(5, 3.5)
+        fig_hist1.set_size_inches(7, 3.5)
         hist1_canvas = FigureCanvasTkAgg(fig_hist1, master=self.histogram_canvas)
         hist1_canvas.draw()
         hist1_canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
@@ -380,14 +424,14 @@ class GraphsPage(tk.Frame):
         fig_hist2, ax_hist2 = self.graph_gen.generate_histogram(attribute='hour', xlabel='Hour of the Day',
                                                                 ylabel='Frequency',
                                                                 title='Distribution of Hour of the Day',
-                                                                color='blue')
+                                                                color='pink')
         fig_hist2.set_size_inches(5, 3.5)
         hist2_canvas = FigureCanvasTkAgg(fig_hist2, master=self.histogram_canvas2)
         hist2_canvas.draw()
         hist2_canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
 
         fig_pie, ax_pie = self.graph_gen.generate_pie_chart_ufo_shape('UFO_shape', '')
-        fig_pie.set_size_inches(10.5, 3.5)
+        fig_pie.set_size_inches(7, 3.5)
         pie_canvas = FigureCanvasTkAgg(fig_pie, master=self.pie_graph_canvas)
         pie_canvas.draw()
         pie_canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
@@ -399,13 +443,23 @@ class GraphsPage(tk.Frame):
         bar_canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
 
         fig_line, ax_line = self.graph_gen.generate_line_graph(x_column='year_found', y_column=None,
-                                                               title='trend of sightings over time', xlabel='Year',
+                                                               title='Trends of Sightings over time', xlabel='Year',
                                                                ylabel='Sightings', color='purple')
-        fig_line.set_size_inches(5, 3.5)
+        fig_line.set_size_inches(7, 3.5)
         line_canvas = FigureCanvasTkAgg(fig_line, master=self.line_graph_canvas)
         line_canvas.draw()
         line_canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
 
+        fig_scatter, ax_scatter = self.graph_gen.generate_scatter_plot(x_column='length_of_encounter_seconds',
+                                                                       y_column='distance_to_nearest_airport_km',
+                                                                       title='',
+                                                                       xlabel='Length of Encounter',
+                                                                       ylabel='Distance to nearest airport',
+                                                                       color=('hotpink', 'blue'))
+        fig_scatter.set_size_inches(5, 3.5)
+        scatter_canvas = FigureCanvasTkAgg(fig_scatter, master=self.scatter_plot_canvas)
+        scatter_canvas.draw()
+        scatter_canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
         plt.tight_layout()
 
 
@@ -719,7 +773,6 @@ class ReportPage(tk.Frame):
         """
         self.lat_input.set(coordinates_tuple[0])
         self.long_input.set(coordinates_tuple[1])
-        print(coordinates_tuple)
 
     def validate_date(self, date_str) -> bool:
         """
@@ -746,6 +799,9 @@ class ReportPage(tk.Frame):
         ufo_shape = self.ufo_shape_input.get()
         length_of_encounter_seconds = self.length_of_encounter_input.get()
         description = self.description_entry.get("1.0", tk.END)
+        if not isinstance(length_of_encounter_seconds, (float, int)):
+            tk.messagebox.showerror('Error', 'The "Encounter Duration" must contain only numerical values.')
+            return
         if "" in [date_time_str, country, location, latitude, longitude, ufo_shape, length_of_encounter_seconds,
                   description]:
             tk.messagebox.showwarning('Error', 'Please fill in the missing fields.')
