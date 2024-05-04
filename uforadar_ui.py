@@ -320,40 +320,40 @@ class GraphsPage(tk.Frame):
         """
         # Histogram Frame
         histogram_frame = tk.LabelFrame(self, text='Histogram')
-        histogram_frame.grid(row=0, column=0, padx=10, pady=2, sticky=tk.NSEW)
+        histogram_frame.grid(row=0, column=0, padx=10, pady=2)
         self.histogram_canvas = tk.Canvas(histogram_frame)
         self.histogram_canvas.grid(row=0, column=0, padx=10)
 
         histogram_frame2 = tk.LabelFrame(self, text='Histogram')
-        histogram_frame2.grid(row=0, column=1, padx=10, pady=2, sticky=tk.NSEW)
+        histogram_frame2.grid(row=0, column=1, padx=10, pady=2)
         self.histogram_canvas2 = tk.Canvas(histogram_frame2)
         self.histogram_canvas2.grid(row=0, column=1, padx=10)
 
         # Scatter Plot Frame
         scatter_plot_frame = tk.LabelFrame(self,
                                            text='Scatter Plot of Length of Encounter and Distance to nearest airport')
-        scatter_plot_frame.grid(row=3, column=1, padx=10, pady=2, sticky=tk.NSEW)
-        self.scatter_plot_canvas = tk.Canvas(scatter_plot_frame, width=300, height=300)
+        scatter_plot_frame.grid(row=3, column=1, padx=10, pady=2)
+        self.scatter_plot_canvas = tk.Canvas(scatter_plot_frame)
         self.scatter_plot_canvas.pack()
 
         # Pie Graph Frame
         pie_graph_frame = tk.LabelFrame(self, text='Pie Chart of different reported UFO shapes (UFO_shape).')
-        pie_graph_frame.grid(row=3, column=0, padx=10, pady=2, sticky=tk.NSEW)
-        self.pie_graph_canvas = tk.Canvas(pie_graph_frame, width=400, height=300)
+        pie_graph_frame.grid(row=3, column=0, padx=10, pady=2)
+        self.pie_graph_canvas = tk.Canvas(pie_graph_frame)
         self.pie_graph_canvas.pack()
 
         # Bar Graph Frame
         bar_graph_frame = tk.LabelFrame(self, text='Bar Graph')
-        bar_graph_frame.grid(row=1, column=1, padx=10, pady=2, sticky=tk.NSEW)
-        self.bar_graph_canvas = tk.Canvas(bar_graph_frame, width=400, height=300)
+        bar_graph_frame.grid(row=1, column=1, padx=10, pady=2)
+        self.bar_graph_canvas = tk.Canvas(bar_graph_frame)
         self.bar_graph_canvas.pack()
 
         # Line Graph Frame
         line_graph_frame = tk.LabelFrame(self, text='Line Graph')
         line_graph_frame.grid(row=1, column=0, padx=10, pady=2, sticky=tk.NSEW)
 
-        self.line_graph_canvas = tk.Canvas(line_graph_frame, width=400, height=300)
-        self.line_graph_canvas.pack(expand=True)
+        self.line_graph_canvas = tk.Canvas(line_graph_frame)
+        self.line_graph_canvas.pack()
 
         popup_button = ttk.Button(self, text="Summary Statistics", command=self.open_popup)
         popup_button.grid(row=4, column=0, sticky=tk.W, padx=330, columnspan=2)
