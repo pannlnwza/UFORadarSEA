@@ -20,20 +20,20 @@ Clone this repository to your local machine:
 To run the application, follow these steps:
 
 ```shell
-python -m venv venv
+python -m venv env
 ```
 Activate the virtual environment using one of the following commands, depending on your operating system:
 
 - **Windows:**
 
     ```bash
-    .venv\Scripts\activate
+    .env\Scripts\activate
     ```
 
 - **macOS/Linux:**
 
     ```bash
-    source venv/bin/activate
+    source env/bin/activate
     ```
 Once the virtual environment is activated, install the required packages using pip:
 ```bash
