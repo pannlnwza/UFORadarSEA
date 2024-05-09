@@ -1,3 +1,4 @@
+import enum
 import os
 import datetime
 from math import radians, sin, cos, sqrt, atan2
@@ -31,7 +32,7 @@ class UFODataProcessor:
         """
         return self.ufo_reports
 
-    def find_nearest_airport(self, latitude: float, longitude: float, airport_data) -> float:
+    def find_nearest_airport(self, latitude: float, longitude: float, airport_data: pd.DataFrame) -> float:
         """
         Find the nearest airport to a given location.
 
@@ -54,18 +55,17 @@ class UFODataProcessor:
                 min_distance = distance
         return min_distance
 
-    def save_to_csv(self, date_time_found, country, location, latitude, longitude, ufo_shape,
-                    length_of_encounter_seconds, description):
+    def save_to_csv(self, date_time_found: str, country: str, location: str, latitude: float,
+                    longitude: float, ufo_shape: str, length_of_encounter_seconds: float, description: str):
         """
         Save UFO sighting data to a CSV file.
         """
         report_no = self.ufo_reports.loc[len(self.ufo_reports)-1]['report_no'] + 1
-        min_distance = self.find_nearest_airport(float(latitude),
-                                                                  float(longitude),
-                                                                  self.airports)
+        min_distance = self.find_nearest_airport(float(latitude), float(longitude), self.airports)
         year_found, month, hour = self.separate_datetime(date_time_found)
         season = self.month_to_season(month)
         date_documented = datetime.date.today().strftime('%m/%d/%Y')
+        country_code = Country.find_country_code(country)
         self.new_row = {'report_no': report_no,
                         'date_documented': date_documented,
                         'date_time_found': date_time_found,
@@ -73,6 +73,7 @@ class UFODataProcessor:
                         'month': month,
                         'hour': hour,
                         'season': season,
+                        'country_code': country_code,
                         'country': country,
                         'location': location,
                         'latitude': latitude,
@@ -156,3 +157,24 @@ class UFODataProcessor:
 
         distance = R * c  # Distance in kilometers
         return distance
+
+
+class Country(enum.Enum):
+    BRUNEI = ['Brunei', 'BRN', 4.5, 114.6667]
+    CAMBODIA = ['Cambodia', 'KHM', 13.0, 105.0]
+    EAST_TIMOR = ['East Timor', 'TLS', -8.55, 125.5167]
+    INDONESIA = ['Indonesia', 'IDN', -5.0, 120]
+    LAOS = ['Laos', 'LAO', 18.0, 105.0]
+    MALAYSIA = ['Malaysia', 'MYS', 2.5, 112.5]
+    MYANMAR = ['Myanmar', 'MMR', 22.0, 98.0]
+    PHILIPPINES = ['Philippines', 'PHL', 13.0, 122.0]
+    SINGAPORE = ['Singapore', 'SG', 1.3667, 103.8]
+    THAILAND = ['Thailand', 'THA', 15.0, 100.0]
+    VIETNAM = ['Vietnam', 'VNM', 16.0, 106.0]
+
+    @classmethod
+    def find_country_code(cls, country_name):
+        for country in cls:
+            if country.value[0].lower() == country_name.lower():
+                return country.value[1]
+        return None
