@@ -4,7 +4,6 @@ import tkinter as tk
 import matplotlib.pyplot as plt
 from tkinter import ttk, messagebox
 import pandas as pd
-import numpy as np
 from tkintermapview import TkinterMapView
 from graph_generator import GraphGenerator
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -16,20 +15,14 @@ class MapPage(tk.Frame):
     """
     A frame for the map view page.
     """
-    def __init__(self, parent, data_processor: UFODataProcessor):
+    def __init__(self, parent):
         """
         Initialize MapPage.
-
-        :param parent: Parent tkinter widget.
-        :type parent: tkinter.Tk
-        :param data_processor: Instance of UFODataProcessor.
-        :type data_processor: UFODataProcessor
+        :param parent: Parent tkinter App.
         """
-        super().__init__(parent)
+        super().__init__()
         self.parent = parent
-        self.data_processor = data_processor
-        self.data = self.data_processor.get_ufo_data()
-        self.marker_list = []
+        self.data = self.parent.data_processor.get_ufo_data()
         image = Image.open(os.path.join(os.getcwd(), 'images', 'marker_icon.png')).resize((40, 40))
         self.MARKER_ICON = ImageTk.PhotoImage(image)
         self.init_components()
@@ -55,6 +48,7 @@ class MapPage(tk.Frame):
         title.grid(row=0, column=1, pady=5,sticky=tk.S)
         description = tk.Label(self, text='An interactive map to track UFO sightings.')
         description.grid(row=1, column=1, pady=1, sticky=tk.N)
+
         # Filter frame
         self.create_filter_frame()
 
@@ -71,7 +65,8 @@ class MapPage(tk.Frame):
         """
         self.filter_frame = ttk.LabelFrame(self, text='Filter', padding='10')
         self.filter_frame.grid(row=2, column=1, sticky=tk.NSEW)
-        # Create a canvas for the radiobuttons
+
+        # Create a canvas for the radio buttons
         canvas = tk.Canvas(self.filter_frame)
         canvas.grid(row=1, column=0, columnspan=3, sticky=tk.NSEW)
 
@@ -80,7 +75,7 @@ class MapPage(tk.Frame):
         scrollbar.grid(row=1, column=3, sticky=tk.NS)
         canvas.configure(yscrollcommand=scrollbar.set)
 
-        # Create a frame to contain the radiobuttons
+        # Create a frame to contain the radio buttons
         radiobutton_frame = ttk.Frame(canvas)
         canvas.create_window((0, 0), window=radiobutton_frame, anchor=tk.NW)
 
@@ -227,8 +222,7 @@ class MapPage(tk.Frame):
         for index, row in self.data.iterrows():
             latitude = float(row['latitude'])
             longitude = float(row['longitude'])
-            marker = self.map_view.set_marker(latitude, longitude, icon=self.MARKER_ICON)
-            self.marker_list.append(marker)
+            self.map_view.set_marker(latitude, longitude, icon=self.MARKER_ICON)
 
     def show_result_details(self, event):
         """
@@ -298,19 +292,15 @@ class GraphsPage(tk.Frame):
     """
     A frame for the graphs page.
     """
-    def __init__(self, parent, data_processor: UFODataProcessor):
+    def __init__(self, parent):
         """
         Initialize GraphsPage.
 
-        :param parent: Parent tkinter widget.
-        :type parent: tkinter.Tk
-        :param data_processor: Instance of UFODataProcessor.
-        :type data_processor: UFODataProcessor
+        :param parent: Parent tkinter App.
         """
-        super().__init__(parent)
+        super().__init__()
         self.parent = parent
-        self.data_processor = data_processor
-        self.data = self.data_processor.get_ufo_data()
+        self.data = self.parent.data_processor.get_ufo_data()
         self.graph_gen = GraphGenerator(self.data)
         self.init_components()
 
@@ -319,43 +309,36 @@ class GraphsPage(tk.Frame):
         Initialize GUI components.
         """
         # Histogram Frame
-        histogram_frame = tk.LabelFrame(self, text='Histogram')
+        histogram_frame = tk.LabelFrame(self, text='Distribution of Encounter Durations')
         histogram_frame.grid(row=0, column=0, padx=10, pady=2)
         self.histogram_canvas = tk.Canvas(histogram_frame)
-        self.histogram_canvas.grid(row=0, column=0, padx=10)
+        self.histogram_canvas.pack(expand=True, fill=tk.BOTH, side=tk.TOP)
 
-        histogram_frame2 = tk.LabelFrame(self, text='Histogram')
+        histogram_frame2 = tk.LabelFrame(self, text='Distribution of Hour of the Day that Sighting was found')
         histogram_frame2.grid(row=0, column=1, padx=10, pady=2)
         self.histogram_canvas2 = tk.Canvas(histogram_frame2)
-        self.histogram_canvas2.grid(row=0, column=1, padx=10)
+        self.histogram_canvas2.pack(expand=True, fill=tk.BOTH, side=tk.TOP)
 
-        # Scatter Plot Frame
-        scatter_plot_frame = tk.LabelFrame(self,
-                                           text='Scatter Plot of Length of Encounter and Distance to nearest airport')
-        scatter_plot_frame.grid(row=3, column=1, padx=10, pady=2)
-        self.scatter_plot_canvas = tk.Canvas(scatter_plot_frame)
-        self.scatter_plot_canvas.pack()
 
         # Pie Graph Frame
         pie_graph_frame = tk.LabelFrame(self, text='Pie Chart of different reported UFO shapes (UFO_shape).')
-        pie_graph_frame.grid(row=3, column=0, padx=10, pady=2)
+        pie_graph_frame.grid(row=3, column=0, padx=10, pady=2, columnspan=2)
         self.pie_graph_canvas = tk.Canvas(pie_graph_frame)
-        self.pie_graph_canvas.pack()
+        self.pie_graph_canvas.pack(expand=True, fill=tk.BOTH)
 
         # Bar Graph Frame
-        bar_graph_frame = tk.LabelFrame(self, text='Bar Graph')
+        bar_graph_frame = tk.LabelFrame(self, text='Top 5 Cities with the Most Reports')
         bar_graph_frame.grid(row=1, column=1, padx=10, pady=2)
         self.bar_graph_canvas = tk.Canvas(bar_graph_frame)
-        self.bar_graph_canvas.pack()
+        self.bar_graph_canvas.pack(expand=True, fill=tk.BOTH)
 
         # Line Graph Frame
-        line_graph_frame = tk.LabelFrame(self, text='Line Graph')
+        line_graph_frame = tk.LabelFrame(self, text='Trends of Sightings over time')
         line_graph_frame.grid(row=1, column=0, padx=10, pady=2, sticky=tk.NSEW)
-
         self.line_graph_canvas = tk.Canvas(line_graph_frame)
-        self.line_graph_canvas.pack()
+        self.line_graph_canvas.pack(expand=True, fill=tk.BOTH)
 
-        popup_button = ttk.Button(self, text="Summary Statistics", command=self.open_popup)
+        popup_button = ttk.Button(self, text="Summary Statistics", command=self.statistic_popup)
         popup_button.grid(row=4, column=0, sticky=tk.W, padx=330, columnspan=2)
         self.create_and_display_graphs()
 
@@ -367,7 +350,45 @@ class GraphsPage(tk.Frame):
         self.rowconfigure(2, weight=1)
         self.rowconfigure(3, weight=1)
 
-    def open_popup(self):
+    def create_and_display_graphs(self):
+        """
+        Create and display graphs.
+        """
+        fig_hist1, ax_hist1 = self.graph_gen.generate_histogram(attribute='length_of_encounter_seconds',
+                                                                xlabel='Length of Encounter',
+                                                                ylabel='Frequency',
+                                                                title='',
+                                                                color='skyblue')
+        hist1_canvas = FigureCanvasTkAgg(fig_hist1, master=self.histogram_canvas)
+        hist1_canvas.draw()
+        hist1_canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
+
+        fig_hist2, ax_hist2 = self.graph_gen.generate_histogram(attribute='hour', xlabel='Hour of the Day',
+                                                                ylabel='Frequency',
+                                                                title='',
+                                                                color='pink')
+        hist2_canvas = FigureCanvasTkAgg(fig_hist2, master=self.histogram_canvas2)
+        hist2_canvas.draw()
+        hist2_canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
+
+        fig_pie, ax_pie = self.graph_gen.generate_pie_chart_ufo_shape('UFO_shape', '')
+        pie_canvas = FigureCanvasTkAgg(fig_pie, master=self.pie_graph_canvas)
+        pie_canvas.draw()
+        pie_canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
+
+        fig_bar, ax_bar = self.graph_gen.generate_top_cities_bar_chart('location')
+        bar_canvas = FigureCanvasTkAgg(fig_bar, master=self.bar_graph_canvas)
+        bar_canvas.draw()
+        bar_canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
+
+        fig_line, ax_line = self.graph_gen.generate_line_graph(x_column='year_found', y_column=None,
+                                                               title='', xlabel='Year',
+                                                               ylabel='Sightings', color='purple')
+        line_canvas = FigureCanvasTkAgg(fig_line, master=self.line_graph_canvas)
+        line_canvas.draw()
+        line_canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
+
+    def statistic_popup(self):
         """
         Opens a popup window to display summary statistics for numerical attributes.
         """
@@ -386,6 +407,24 @@ class GraphsPage(tk.Frame):
 
         self.statistics_label = ttk.Label(popup_window, text="")
         self.statistics_label.pack()
+
+        scatter_plot_frame = tk.LabelFrame(popup_window,
+                                           text='Scatter Plot of Length of Encounter and Distance to nearest airport')
+        scatter_plot_frame.pack()
+        self.scatter_plot_canvas = tk.Canvas(scatter_plot_frame)
+        self.scatter_plot_canvas.pack()
+        fig_scatter, ax_scatter = self.graph_gen.generate_scatter_plot(x_column='length_of_encounter_seconds',
+                                                                       y_column='distance_to_nearest_airport_km',
+                                                                       title='',
+                                                                       xlabel='Length of Encounter',
+                                                                       ylabel='Distance to nearest airport',
+                                                                       color=('hotpink', 'blue'))
+        fig_scatter.set_size_inches(5, 3.5)
+        scatter_canvas = FigureCanvasTkAgg(fig_scatter, master=self.scatter_plot_canvas)
+        scatter_canvas.draw()
+        scatter_canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
+        plt.tight_layout()
+
 
     def display_statistics(self, event):
         """
@@ -407,77 +446,20 @@ class GraphsPage(tk.Frame):
         """
         return self.data[column].describe().to_string()
 
-    def create_and_display_graphs(self):
-        """
-        Create and display graphs.
-        """
-        fig_hist1, ax_hist1 = self.graph_gen.generate_histogram(attribute='length_of_encounter_seconds',
-                                                                xlabel='Length of Encounter',
-                                                                ylabel='Frequency',
-                                                                title='Distribution of Encounter Durations',
-                                                                color='skyblue')
-        fig_hist1.set_size_inches(7, 3.5)
-        hist1_canvas = FigureCanvasTkAgg(fig_hist1, master=self.histogram_canvas)
-        hist1_canvas.draw()
-        hist1_canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
-
-        fig_hist2, ax_hist2 = self.graph_gen.generate_histogram(attribute='hour', xlabel='Hour of the Day',
-                                                                ylabel='Frequency',
-                                                                title='Distribution of Hour of the Day',
-                                                                color='pink')
-        fig_hist2.set_size_inches(5, 3.5)
-        hist2_canvas = FigureCanvasTkAgg(fig_hist2, master=self.histogram_canvas2)
-        hist2_canvas.draw()
-        hist2_canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
-
-        fig_pie, ax_pie = self.graph_gen.generate_pie_chart_ufo_shape('UFO_shape', '')
-        fig_pie.set_size_inches(7, 3.5)
-        pie_canvas = FigureCanvasTkAgg(fig_pie, master=self.pie_graph_canvas)
-        pie_canvas.draw()
-        pie_canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
-
-        fig_bar, ax_bar = self.graph_gen.generate_top_cities_bar_chart('location')
-        fig_bar.set_size_inches(5, 3.5)
-        bar_canvas = FigureCanvasTkAgg(fig_bar, master=self.bar_graph_canvas)
-        bar_canvas.draw()
-        bar_canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
-
-        fig_line, ax_line = self.graph_gen.generate_line_graph(x_column='year_found', y_column=None,
-                                                               title='Trends of Sightings over time', xlabel='Year',
-                                                               ylabel='Sightings', color='purple')
-        fig_line.set_size_inches(7, 3.5)
-        line_canvas = FigureCanvasTkAgg(fig_line, master=self.line_graph_canvas)
-        line_canvas.draw()
-        line_canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
-
-        fig_scatter, ax_scatter = self.graph_gen.generate_scatter_plot(x_column='length_of_encounter_seconds',
-                                                                       y_column='distance_to_nearest_airport_km',
-                                                                       title='',
-                                                                       xlabel='Length of Encounter',
-                                                                       ylabel='Distance to nearest airport',
-                                                                       color=('hotpink', 'blue'))
-        fig_scatter.set_size_inches(5, 3.5)
-        scatter_canvas = FigureCanvasTkAgg(fig_scatter, master=self.scatter_plot_canvas)
-        scatter_canvas.draw()
-        scatter_canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
-        plt.tight_layout()
-
 
 class CreateYourOwnGraphPage(tk.Frame):
     """
     A frame for creating custom graphs based on UFO sighting data.
     """
-    def __init__(self, parent, data_processor: UFODataProcessor):
+    def __init__(self, parent):
         """
         Initialize the CreateYourOwnGraphPage.
 
-        :param parent: The parent tkinter window.
-        :param data_processor: An instance of UFODataProcessor for data processing.
+        :param parent: The parent tkinter App.
         """
-        super().__init__(parent)
+        super().__init__()
         self.parent = parent
-        self.data_processor = data_processor
-        self.data = self.data_processor.get_ufo_data()
+        self.data = self.parent.data_processor.get_ufo_data()
         self.graph_gen = GraphGenerator(self.data)
         self.init_components()
 
@@ -669,16 +651,15 @@ class ReportPage(tk.Frame):
     """
     A frame for submitting UFO sighting reports.
     """
-    def __init__(self, parent, data_processor: UFODataProcessor):
+    def __init__(self, parent):
         """
         Initialize the ReportPage.
 
-        :param parent: The parent tkinter window.
-        :param data_processor: An instance of UFODataProcessor for data processing.
+        :param parent: The parent tkinter App.
         """
-        super().__init__(parent)
+        super().__init__()
         self.parent = parent
-        self.data_processor = data_processor
+        self.data_processor = self.parent.data_processor
         self.init_components()
 
     def init_components(self):
@@ -798,13 +779,11 @@ class ReportPage(tk.Frame):
         longitude = self.long_input.get()
         ufo_shape = self.ufo_shape_input.get()
         length_of_encounter_seconds = self.length_of_encounter_input.get()
-        description = self.description_entry.get("1.0", tk.END)
-        if not isinstance(length_of_encounter_seconds, (float, int)):
-            tk.messagebox.showerror('Error', 'The "Encounter Duration" must contain only numerical values.')
+        description = self.description_entry.get('1.0', tk.END)
+        if ("" or 'Click on the map.') in [date_time_str, country, location, latitude, longitude,
+                                           ufo_shape, length_of_encounter_seconds, description]:
+            tk.messagebox.showwarning('Error', 'Please fill in the empty fields.')
             return
-        if "" in [date_time_str, country, location, latitude, longitude, ufo_shape, length_of_encounter_seconds,
-                  description]:
-            tk.messagebox.showwarning('Error', 'Please fill in the missing fields.')
         else:
             try:
                 date_time = datetime.datetime.strptime(date_time_str, '%m/%d/%Y %H:%M')
@@ -812,9 +791,15 @@ class ReportPage(tk.Frame):
                 tk.messagebox.showerror('Error',
                                         'Invalid date and time format. Please enter in MM/DD/YYYY HH:MM format.')
                 return
-            tk.messagebox.showinfo('Report submitted', 'Report submitted successfully!')
-            self.data_processor.save_to_csv(date_time, country, location, latitude, longitude, ufo_shape,
-                                            length_of_encounter_seconds, description)
+            try:
+                length_of_encounter_seconds = float(length_of_encounter_seconds)
+            except ValueError:
+                tk.messagebox.showerror('Error', 'The "Encounter Duration" must contain only numerical values.')
+                return
+
+        tk.messagebox.showinfo('Report submitted', 'Report submitted successfully!')
+        self.data_processor.save_to_csv(date_time, country, location, latitude, longitude, ufo_shape,
+                                        length_of_encounter_seconds, description)
 
 
 class UFOApp(tk.Tk):
@@ -839,23 +824,31 @@ class UFOApp(tk.Tk):
         Initialize GUI components.
         """
         self.main_menu = tk.Frame(self)
-        title_label = ttk.Label(self.main_menu, text='UFORadarSEA', font=('Helvetica', 24, 'bold'), padding=(0, 20))
-        title_label.grid(row=0, column=0, columnspan=3)
-        view_map_button = tk.Button(self.main_menu, text='View Map', height=2, width=9, command=self.show_map_page)
-        view_map_button.grid(row=1, column=0, padx=5, pady=10)
+        self.main_canvas = tk.Canvas(self.main_menu, width=500, height=300, bg='pink')
+        self.main_canvas.pack(expand=True, fill=tk.BOTH)
+        title_label = tk.Label(self.main_canvas, text='UFORadarSEA', font=('Helvetica', 24, 'bold'), bg='pink')
+        title_label.grid(row=0, column=0, columnspan=3, sticky=tk.NSEW)
+        view_map_button = tk.Button(self.main_canvas, text='View Map', height=2, width=9, command=self.show_map_page)
+        view_map_button.grid(row=1, column=0, padx=5, pady=10, sticky=tk.NSEW)
 
-        graphs_button = tk.Button(self.main_menu, text='Graphs', height=2, width=9, command=self.show_graphs_page)
-        graphs_button.grid(row=1, column=1, padx=5, pady=10)
+        graphs_button = tk.Button(self.main_canvas, text='Graphs', height=2, width=9, command=self.show_graphs_page)
+        graphs_button.grid(row=1, column=1, padx=5, pady=10, sticky=tk.NSEW)
 
-        file_report_button = tk.Button(self.main_menu, text='File a Report', height=2, width=9,
+        file_report_button = tk.Button(self.main_canvas, text='File a Report', height=2, width=9,
                                        command=self.show_report_page)
-        file_report_button.grid(row=1, column=2, padx=5, pady=10)
-        self.main_menu.pack(expand=True)
+        file_report_button.grid(row=1, column=2, padx=5, pady=10, sticky=tk.NSEW)
+        self.main_menu.pack(expand=True, fil=tk.BOTH)
 
-        self.map_page = MapPage(self, self.data_processor)
-        self.report_page = ReportPage(self, self.data_processor)
-        self.graphs_page = GraphsPage(self, self.data_processor)
-        self.user_create_graph_page = CreateYourOwnGraphPage(self, self.data_processor)
+        self.map_page = MapPage(self)
+        self.report_page = ReportPage(self)
+        self.graphs_page = GraphsPage(self)
+        self.user_create_graph_page = CreateYourOwnGraphPage(self)
+
+        self.main_menu.grid_rowconfigure(0, weight=1)
+        self.main_menu.grid_rowconfigure(1, weight=1)
+        self.main_canvas.grid_columnconfigure(0, weight=1)
+        self.main_canvas.grid_columnconfigure(1, weight=1)
+        self.main_canvas.grid_columnconfigure(2, weight=1)
 
     def show_map_page(self):
         """
