@@ -27,7 +27,7 @@ class GraphGenerator:
         :param color: The color of the bars.
         :return: The figure and axis objects.
         """
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(5, 3), tight_layout=True)
         ax.hist(self.data[attribute], color=color)
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
@@ -45,7 +45,7 @@ class GraphGenerator:
         """
         def autopct_more_than_4(pct):
             return ('%1.f%%' % pct) if pct > 4 else ''
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(10, 2), tight_layout=True)
         count = self.data[attribute].value_counts()
         ax.pie(count, labels=count.index, autopct=autopct_more_than_4, startangle=90)
         ax.set_title(title)
@@ -65,7 +65,7 @@ class GraphGenerator:
         :param color: The color of the markers.
         :return: The figure and axis objects.
         """
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(5, 3), tight_layout=True)
         if y_column is None:
             counts = self.data[x_column].value_counts().sort_index()
             ax.plot(counts.index, counts.values, marker='o', color=color)
@@ -99,9 +99,7 @@ class GraphGenerator:
             ax.scatter(counts.index, counts.values, c=color[0])
         else:
             ax.scatter(self.data[x_column], self.data[y_column], c=color[0])
-            ax.spines['left'].set_color(color[1])
 
-        ax.spines['bottom'].set_color(color[0])
         ax.set_title(title)
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
@@ -119,7 +117,7 @@ class GraphGenerator:
         :param color: The color of the bars.
         :return: The figure and axis objects.
         """
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(5, 3), tight_layout=True)
         if y_column is None:
             counts = self.data[x_column].value_counts()
             ax.bar(counts.index, counts.values, color=color)
@@ -137,10 +135,10 @@ class GraphGenerator:
         :param column: The column containing city data.
         :return: The figure and axis objects.
         """
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(5, 3), tight_layout=True)
         top_cities = self.data[column].value_counts().head(5)
         top_cities.plot(kind='bar', color='salmon')
-        ax.set_title('Top 5 Cities with the Most Reports')
+        ax.set_title('')
         ax.set_xlabel('City')
         ax.set_ylabel('Number of Reports')
         plt.xticks(rotation=15)
@@ -162,11 +160,10 @@ class GraphGenerator:
         labels_with_percentage = [f'{label} ({percentage:.0f}%)'
                                   for label, percentage in zip(count.index, percentages)]
 
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(10, 3.5), tight_layout=True)
         wedges, _, autotexts = ax.pie(count, autopct=autopct_more_than_4, startangle=90)
         plt.legend(wedges, labels_with_percentage, loc='center right',
                    bbox_to_anchor=(2.15, 0.5), ncol=2)
-        plt.tight_layout()
         ax.set_title(title)
         return fig, ax
 
