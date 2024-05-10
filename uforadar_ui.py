@@ -9,6 +9,7 @@ from graph_generator import GraphGenerator
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from data_processor import UFODataProcessor
 from PIL import Image, ImageTk
+from buttons import CreateButton
 
 
 class MapPage(tk.Frame):
@@ -31,6 +32,7 @@ class MapPage(tk.Frame):
         """
         Initialize GUI components.
         """
+        self.configure(bg='white')
         map_frame = ttk.Frame(self, borderwidth=2)
         map_frame.grid(row=0, column=0, rowspan=3, padx=5, pady=5, sticky=tk.NSEW)
 
@@ -44,9 +46,9 @@ class MapPage(tk.Frame):
         # Add position markers for UFO sightings
         self.add_sighting_markers()
 
-        title = tk.Label(self, text='UFORadarSEA', font=('Helvetica', 20, 'bold'))
+        title = tk.Label(self, text='UFORadarSEA', font=('Helvetica', 20, 'bold'), bg='white')
         title.grid(row=0, column=1, pady=5,sticky=tk.S)
-        description = tk.Label(self, text='An interactive map to track UFO sightings.')
+        description = tk.Label(self, text='An interactive map to track UFO sightings.', bg='white')
         description.grid(row=1, column=1, pady=1, sticky=tk.N)
 
         # Filter frame
@@ -63,7 +65,7 @@ class MapPage(tk.Frame):
         """
         Create the filter frame.
         """
-        self.filter_frame = ttk.LabelFrame(self, text='Filter', padding='10')
+        self.filter_frame = tk.LabelFrame(self, text='Filter')
         self.filter_frame.grid(row=2, column=1, sticky=tk.NSEW)
 
         # Create a canvas for the radio buttons
@@ -159,7 +161,6 @@ class MapPage(tk.Frame):
         selected_country = self.country_var.get()
         selected_year = self.year_var.get()
         selected_shape = self.shape_var.get()
-
         filtered_data = self.data
         if selected_country != 'All':
             filtered_data = filtered_data[filtered_data['country'] == selected_country]
@@ -182,9 +183,12 @@ class MapPage(tk.Frame):
         :type data: pandas.DataFrame
         """
         self.results_listbox.delete(0, tk.END)
-        for index, row in data.iterrows():
-            self.results_listbox.insert(tk.END, f"Report No. {row['report_no']} - "
-                                                f"{row['country']} - {row['year_found']} - {row['UFO_shape']}")
+        if data.empty:
+            self.results_listbox.insert(tk.END, 'No result found.')
+        else:
+            for index, row in data.iterrows():
+                self.results_listbox.insert(tk.END, f"Report No. {row['report_no']} - "
+                                                    f"{row['country']} - {row['year_found']} - {row['UFO_shape']}")
 
     def update_map_markers(self, filtered_data: pd.DataFrame):
         """
@@ -229,7 +233,7 @@ class MapPage(tk.Frame):
         Show detailed information about a selected result.
         """
         selected_index = self.results_listbox.curselection()
-        if selected_index:
+        if selected_index != 'No result found.':
             selected_item = self.results_listbox.get(selected_index)
             report_no, country, year, shape = selected_item.split(" - ")
             report_no = report_no.split(" ")[2]
@@ -310,36 +314,36 @@ class GraphsPage(tk.Frame):
         """
         # Histogram Frame
         histogram_frame = tk.LabelFrame(self, text='Distribution of Encounter Durations')
-        histogram_frame.grid(row=0, column=0, padx=10, pady=2)
+        histogram_frame.grid(row=1, column=0, padx=10, pady=2)
         self.histogram_canvas = tk.Canvas(histogram_frame)
         self.histogram_canvas.pack(expand=True, fill=tk.BOTH, side=tk.TOP)
 
         histogram_frame2 = tk.LabelFrame(self, text='Distribution of Hour of the Day that Sighting was found')
-        histogram_frame2.grid(row=0, column=1, padx=10, pady=2)
+        histogram_frame2.grid(row=1, column=1, padx=10, pady=2)
         self.histogram_canvas2 = tk.Canvas(histogram_frame2)
         self.histogram_canvas2.pack(expand=True, fill=tk.BOTH, side=tk.TOP)
 
 
         # Pie Graph Frame
         pie_graph_frame = tk.LabelFrame(self, text='Pie Chart of different reported UFO shapes (UFO_shape).')
-        pie_graph_frame.grid(row=3, column=0, padx=10, pady=2, columnspan=2)
+        pie_graph_frame.grid(row=4, column=0, padx=10, pady=2, columnspan=2)
         self.pie_graph_canvas = tk.Canvas(pie_graph_frame)
         self.pie_graph_canvas.pack(expand=True, fill=tk.BOTH)
 
         # Bar Graph Frame
         bar_graph_frame = tk.LabelFrame(self, text='Top 5 Cities with the Most Reports')
-        bar_graph_frame.grid(row=1, column=1, padx=10, pady=2)
+        bar_graph_frame.grid(row=2, column=1, padx=10, pady=2)
         self.bar_graph_canvas = tk.Canvas(bar_graph_frame)
         self.bar_graph_canvas.pack(expand=True, fill=tk.BOTH)
 
         # Line Graph Frame
         line_graph_frame = tk.LabelFrame(self, text='Trends of Sightings over time')
-        line_graph_frame.grid(row=1, column=0, padx=10, pady=2, sticky=tk.NSEW)
+        line_graph_frame.grid(row=2, column=0, padx=10, pady=2, sticky=tk.NSEW)
         self.line_graph_canvas = tk.Canvas(line_graph_frame)
         self.line_graph_canvas.pack(expand=True, fill=tk.BOTH)
 
         popup_button = ttk.Button(self, text="Summary Statistics", command=self.statistic_popup)
-        popup_button.grid(row=4, column=0, sticky=tk.W, padx=330, columnspan=2)
+        popup_button.grid(row=0, column=0, sticky=tk.W, padx=330, columnspan=2)
         self.create_and_display_graphs()
 
         # Configure grid weights
@@ -823,23 +827,32 @@ class UFOApp(tk.Tk):
         """
         Initialize GUI components.
         """
+        self.configure(bg='#354662')
         self.main_menu = tk.Frame(self)
-        self.main_canvas = tk.Canvas(self.main_menu, width=500, height=300, bg='pink')
+        self.main_canvas = tk.Canvas(self.main_menu, bg='#354662', width=800, height=450, borderwidth=0)
         self.main_canvas.pack(expand=True, fill=tk.BOTH)
-        title_label = tk.Label(self.main_canvas, text='UFORadarSEA', font=('Helvetica', 24, 'bold'), bg='pink')
-        title_label.grid(row=0, column=0, columnspan=3, sticky=tk.NSEW)
-        view_map_button = tk.Button(self.main_canvas, text='View Map', height=2, width=9, command=self.show_map_page)
-        view_map_button.grid(row=1, column=0, padx=5, pady=10, sticky=tk.NSEW)
+        self.image = ImageTk.PhotoImage(Image.open(os.path.join(os.getcwd(), 'images', 'main_bg.png')))
+        self.main_canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
 
-        graphs_button = tk.Button(self.main_canvas, text='Graphs', height=2, width=9, command=self.show_graphs_page)
-        graphs_button.grid(row=1, column=1, padx=5, pady=10, sticky=tk.NSEW)
+        self.view_map_button = CreateButton(self.main_menu).button(img1='map_2.png', img2='map_1.png', bg='#87919c',command=self.show_map_page)
+        self.graphs_button = CreateButton(self.main_menu).button(img1='graphs_2.png', img2='graphs_1.png',
+                                                  bg='#d1cfc3', command=self.show_graphs_page)
+        self.file_report_button = CreateButton(self.main_menu).button(img1='report_2.png', img2='report_1.png', bg='#c7c5b8',command=self.show_report_page)
+        self.button1_canvas = self.main_canvas.create_window(335, 200,
+                                               anchor="nw",
+                                               window=self.view_map_button)
 
-        file_report_button = tk.Button(self.main_canvas, text='File a Report', height=2, width=9,
-                                       command=self.show_report_page)
-        file_report_button.grid(row=1, column=2, padx=5, pady=10, sticky=tk.NSEW)
-        self.main_menu.pack(expand=True, fil=tk.BOTH)
+        self.button2_canvas = self.main_canvas.create_window(335, 275,
+                                               anchor="nw",
+                                               window=self.graphs_button)
 
-        self.map_page = MapPage(self)
+        self.button3_canvas = self.main_canvas.create_window(335, 350, anchor="nw",
+                                               window=self.file_report_button)
+        self.back_button = CreateButton(self).button(img1='back_2.png', img2='back_1.png',
+                                                              bg='white', command=self.show_main_menu)
+
+        self.main_menu.pack(expand=True)
+
         self.report_page = ReportPage(self)
         self.graphs_page = GraphsPage(self)
         self.user_create_graph_page = CreateYourOwnGraphPage(self)
@@ -854,40 +867,46 @@ class UFOApp(tk.Tk):
         """
         Switch to the map page.
         """
+        self.map_page = MapPage(self)
         self.map_page.pack(expand=True, fill=tk.BOTH)
         self.main_menu.pack_forget()
-        self.back_button = tk.Button(self.map_page, text='Back to Main Menu', command=self.show_main_menu)
-        self.back_button.grid(row=3, column=0, sticky=tk.W)
+        self.configure(bg='white')
+        self.back_button.pack(anchor=tk.W)
 
     def show_report_page(self):
         """
         Switch to the report page.
         """
+        self.report_page = ReportPage(self)
         self.report_page.pack(expand=True, fill=tk.BOTH)
         self.main_menu.pack_forget()
-        self.back_button = tk.Button(self.report_page, text='Back to Main Menu', command=self.show_main_menu)
-        self.back_button.grid(row=14, column=0, sticky=tk.W)
+        self.configure(bg='white')
+        self.back_button.pack(anchor=tk.W)
 
     def show_graphs_page(self):
         """
         Switch to the graphs page.
         """
+        self.graphs_page = GraphsPage(self)
         self.graphs_page.pack(expand=True, fill=tk.BOTH)
         self.main_menu.pack_forget()
         self.user_create_graph_page.pack_forget()
-        self.back_button = tk.Button(self.graphs_page, text='Back to Main Menu', command=self.show_main_menu)
-        self.back_button.grid(row=4, column=0, sticky=tk.W)
+        self.configure(bg='white')
+        self.back_button.pack(anchor=tk.W)
         create_graph_button = tk.Button(self.graphs_page, text='Create your own graph!', command=self.show_user_create_graph_page)
-        create_graph_button.grid(row=4, column=0, padx=150, sticky=tk.W)
+        create_graph_button.grid(row=0, column=0)
 
     def show_main_menu(self):
         """
         Switch to the main menu.
         """
+        if not self.main_menu.winfo_ismapped():  # Check if main menu is not already mapped
+            self.main_menu.pack(expand=True)
+            self.configure(bg='#354662')
         self.map_page.pack_forget()
-        self.report_page.pack_forget()
         self.graphs_page.pack_forget()
-        self.main_menu.pack(expand=True)
+        self.report_page.pack_forget()
+        self.back_button.pack_forget()
 
     def show_user_create_graph_page(self):
         """
@@ -897,6 +916,7 @@ class UFOApp(tk.Tk):
         self.user_create_graph_page.pack(expand=True, fill=tk.BOTH)
         self.back_button = tk.Button(self.user_create_graph_page, text='Back to Graphs', command=self.show_graphs_page)
         self.back_button.grid(row=20, column=0, sticky=tk.W)
+
 
     def run(self):
         """
