@@ -1,15 +1,17 @@
 import os
 import datetime
 import tkinter as tk
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from tkinter import ttk, messagebox
 import pandas as pd
 from tkintermapview import TkinterMapView
 from graph_generator import GraphGenerator
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from data_processor import UFODataProcessor
+from data_processor import UFODataProcessor, Country
 from PIL import Image, ImageTk
-from buttons import CreateButton
+from button import CreateButton
 
 
 class MapPage(tk.Frame):
@@ -233,8 +235,8 @@ class MapPage(tk.Frame):
         Show detailed information about a selected result.
         """
         selected_index = self.results_listbox.curselection()
-        if selected_index != 'No result found.':
-            selected_item = self.results_listbox.get(selected_index)
+        selected_item = self.results_listbox.get(selected_index)
+        if selected_item != 'No result found.':
             report_no, country, year, shape = selected_item.split(" - ")
             report_no = report_no.split(" ")[2]
             filtered_data = self.data[(self.data['report_no'] == int(report_no))]
@@ -342,8 +344,8 @@ class GraphsPage(tk.Frame):
         self.line_graph_canvas = tk.Canvas(line_graph_frame)
         self.line_graph_canvas.pack(expand=True, fill=tk.BOTH)
 
-        popup_button = ttk.Button(self, text="Summary Statistics", command=self.statistic_popup)
-        popup_button.grid(row=0, column=0, sticky=tk.W, padx=330, columnspan=2)
+        stats_button = CreateButton(self).button(img1='stats_2.png', img2='stats_1.png', bg='white', command=self.statistic_popup)
+        stats_button.grid(row=0, column=0, sticky=tk.W, padx=165, columnspan=2)
         self.create_and_display_graphs()
 
         # Configure grid weights
@@ -504,7 +506,7 @@ class CreateYourOwnGraphPage(tk.Frame):
         self.color_var = tk.StringVar()
         self.color_label = ttk.Label(self, text='Graph Color:')
         self.color_combobox = ttk.Combobox(self, textvariable=self.color_var,
-                                           values=['blue', 'green', 'red', 'purple', 'orange'])
+                                           values=['blue', 'green', 'red', 'yellow'])
         self.color_label.grid(row=1, column=1)
         self.color_combobox.grid(row=2, column=1)
 
@@ -680,11 +682,13 @@ class ReportPage(tk.Frame):
         country_label = ttk.Label(self, text='Country:')
         country_label.grid(row=1, column=0, padx=10, pady=5, sticky=tk.W)
         self.country_input = tk.StringVar()
-        self.country_entry = ttk.Entry(self, textvariable=self.country_input)
+        self.country_entry = ttk.Combobox(self, textvariable=self.country_input)
+        self.country_entry.bind("<<ComboboxSelected>>", self.set_map_country)
+        self.set_country_combobox_value()
         self.country_entry.grid(row=1, column=1, padx=10, pady=5, sticky=tk.W)
 
         # Location
-        location_label = ttk.Label(self, text='City:')
+        location_label = ttk.Label(self, text='City/Location:')
         location_label.grid(row=2, column=0, padx=10, pady=5, sticky=tk.W)
         self.location_input = tk.StringVar()
         self.location_entry = ttk.Entry(self, textvariable=self.location_input)
@@ -737,6 +741,19 @@ class ReportPage(tk.Frame):
         self.grid_columnconfigure(1, weight=1)
         for i in range(15):
             self.grid_rowconfigure(i, weight=1)
+
+    def set_country_combobox_value(self):
+        _list = []
+        for country in Country:
+            _list.append(country.value[0])
+        self.country_entry['value'] = _list
+
+    def set_map_country(self, event):
+        country = self.country_input.get()
+        lat = Country.find_val(country, 2)
+        lon = Country.find_val(country, 3)
+        self.map_view.set_position(lat, lon)
+        self.map_view.set_zoom(4)
 
     def create_map_frame(self):
         """
@@ -819,6 +836,7 @@ class UFOApp(tk.Tk):
         super().__init__()
         icon = ImageTk.PhotoImage(Image.open(os.path.join(os.getcwd(), 'images', 'marker_icon.png')).resize((40, 40)))
         self.wm_iconphoto(False, icon)
+        self.protocol("WM_DELETE_WINDOW", self.on_close)
         self.title('UFORadarSEA')
         self.data_processor = data_processor
         self.init_components()
@@ -831,8 +849,9 @@ class UFOApp(tk.Tk):
         self.main_menu = tk.Frame(self)
         self.main_canvas = tk.Canvas(self.main_menu, bg='#354662', width=800, height=450, borderwidth=0)
         self.main_canvas.pack(expand=True, fill=tk.BOTH)
-        self.image = ImageTk.PhotoImage(Image.open(os.path.join(os.getcwd(), 'images', 'main_bg.png')))
-        self.main_canvas.create_image(0, 0, image=self.image, anchor=tk.NW)
+        self.image = Image.open(os.path.join(os.getcwd(), 'images', 'main_bg.png'))
+        self.main_bg = ImageTk.PhotoImage(self.image)
+        self.main_canvas.create_image(0, 0, image=self.main_bg, anchor=tk.NW)
 
         self.view_map_button = CreateButton(self.main_menu).button(img1='map_2.png', img2='map_1.png', bg='#87919c',command=self.show_map_page)
         self.graphs_button = CreateButton(self.main_menu).button(img1='graphs_2.png', img2='graphs_1.png',
@@ -853,6 +872,7 @@ class UFOApp(tk.Tk):
 
         self.main_menu.pack(expand=True)
 
+        self.map_page = MapPage(self)
         self.report_page = ReportPage(self)
         self.graphs_page = GraphsPage(self)
         self.user_create_graph_page = CreateYourOwnGraphPage(self)
@@ -867,7 +887,6 @@ class UFOApp(tk.Tk):
         """
         Switch to the map page.
         """
-        self.map_page = MapPage(self)
         self.map_page.pack(expand=True, fill=tk.BOTH)
         self.main_menu.pack_forget()
         self.configure(bg='white')
@@ -893,8 +912,8 @@ class UFOApp(tk.Tk):
         self.user_create_graph_page.pack_forget()
         self.configure(bg='white')
         self.back_button.pack(anchor=tk.W)
-        create_graph_button = tk.Button(self.graphs_page, text='Create your own graph!', command=self.show_user_create_graph_page)
-        create_graph_button.grid(row=0, column=0)
+        create_graph_button = CreateButton(self.graphs_page).button(img1='create_graph2.png', img2='create_graph1.png', bg='white', command=self.show_user_create_graph_page)
+        create_graph_button.grid(row=0, column=0, sticky=tk.W)
 
     def show_main_menu(self):
         """
@@ -913,9 +932,16 @@ class UFOApp(tk.Tk):
         Switch to the custom graph creation page.
         """
         self.graphs_page.pack_forget()
+        self.back_button.pack_forget()
         self.user_create_graph_page.pack(expand=True, fill=tk.BOTH)
-        self.back_button = tk.Button(self.user_create_graph_page, text='Back to Graphs', command=self.show_graphs_page)
-        self.back_button.grid(row=20, column=0, sticky=tk.W)
+        self.back_to_graph = tk.Button(self.user_create_graph_page, text='Back to Graphs', command=self.show_graphs_page)
+        self.back_to_graph.grid(row=20, column=0, sticky=tk.W)
+
+    def on_close(self):
+        self.image.close()
+        matplotlib.pyplot.close()
+        self.quit()
+
 
 
     def run(self):
