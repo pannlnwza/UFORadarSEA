@@ -65,7 +65,7 @@ class UFODataProcessor:
         year_found, month, hour = self.separate_datetime(date_time_found)
         season = self.month_to_season(month)
         date_documented = datetime.date.today().strftime('%m/%d/%Y')
-        country_code = Country.find_country_code(country)
+        country_code = Country.find_val(country, 1)
         self.new_row = {'report_no': report_no,
                         'date_documented': date_documented,
                         'date_time_found': date_time_found,
@@ -173,8 +173,8 @@ class Country(enum.Enum):
     VIETNAM = ['Vietnam', 'VNM', 16.0, 106.0]
 
     @classmethod
-    def find_country_code(cls, country_name):
+    def find_val(cls, country_name, index):
         for country in cls:
             if country.value[0].lower() == country_name.lower():
-                return country.value[1]
+                return country.value[index]
         return None
