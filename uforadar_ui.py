@@ -12,6 +12,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from data_processor import UFODataProcessor, Country
 from PIL import Image, ImageTk
 from button import CreateButton
+from tkinter.filedialog import asksaveasfile
 
 
 class MapPage(tk.Frame):
@@ -28,13 +29,13 @@ class MapPage(tk.Frame):
         self.data = self.parent.data_processor.get_ufo_data()
         image = Image.open(os.path.join(os.getcwd(), 'images', 'marker_icon.png')).resize((40, 40))
         self.MARKER_ICON = ImageTk.PhotoImage(image)
+        self.configure(bg='#F8F8FF')
         self.init_components()
 
     def init_components(self):
         """
         Initialize GUI components.
         """
-        self.configure(bg='white')
         map_frame = ttk.Frame(self, borderwidth=2)
         map_frame.grid(row=0, column=0, rowspan=3, padx=5, pady=5, sticky=tk.NSEW)
 
@@ -48,9 +49,9 @@ class MapPage(tk.Frame):
         # Add position markers for UFO sightings
         self.add_sighting_markers()
 
-        title = tk.Label(self, text='UFORadarSEA', font=('Helvetica', 20, 'bold'), bg='white')
+        title = tk.Label(self, text='UFORadarSEA', font=('Helvetica', 20, 'bold'), bg='#F8F8FF')
         title.grid(row=0, column=1, pady=5,sticky=tk.S)
-        description = tk.Label(self, text='An interactive map to track UFO sightings.', bg='white')
+        description = tk.Label(self, text='An interactive map to track UFO sightings.', bg='#F8F8FF')
         description.grid(row=1, column=1, pady=1, sticky=tk.N)
 
         # Filter frame
@@ -71,7 +72,7 @@ class MapPage(tk.Frame):
         self.filter_frame.grid(row=2, column=1, sticky=tk.NSEW)
 
         # Create a canvas for the radio buttons
-        canvas = tk.Canvas(self.filter_frame)
+        canvas = tk.Canvas(self.filter_frame, bg='white')
         canvas.grid(row=1, column=0, columnspan=3, sticky=tk.NSEW)
 
         # Add a scrollbar for the canvas
@@ -80,11 +81,11 @@ class MapPage(tk.Frame):
         canvas.configure(yscrollcommand=scrollbar.set)
 
         # Create a frame to contain the radio buttons
-        radiobutton_frame = ttk.Frame(canvas)
+        radiobutton_frame = tk.Frame(canvas)
         canvas.create_window((0, 0), window=radiobutton_frame, anchor=tk.NW)
 
         # Country filter
-        country_label = ttk.Label(radiobutton_frame, text='Country:')
+        country_label = tk.Label(radiobutton_frame, text='Country:')
         country_label.grid(row=0, column=0, sticky=tk.W)
 
         self.country_var = tk.StringVar()
@@ -94,11 +95,11 @@ class MapPage(tk.Frame):
         for i, country in enumerate(countries):
             radio = ttk.Radiobutton(radiobutton_frame, text=country,
                                     variable=self.country_var, value=country)
-            radio.grid(row=i + 1, column=0, sticky=tk.W)
+            radio.grid(row=i + 1, column=0, sticky=tk.W, padx=10)
             self.country_radios.append(radio)
 
         # Year filter
-        year_label = ttk.Label(radiobutton_frame, text='Year:')
+        year_label = tk.Label(radiobutton_frame, text='Year:')
         year_label.grid(row=0, column=1, sticky=tk.W)
 
         self.year_var = tk.StringVar()
@@ -107,10 +108,10 @@ class MapPage(tk.Frame):
         for i, year in enumerate(years):
             radio = ttk.Radiobutton(radiobutton_frame, text=year,
                                     variable=self.year_var, value=year)
-            radio.grid(row=i + 1, column=1, sticky=tk.W)
+            radio.grid(row=i + 1, column=1, sticky=tk.W, padx=10)
 
         # Shape filter
-        shape_label = ttk.Label(radiobutton_frame, text='Shape:')
+        shape_label = tk.Label(radiobutton_frame, text='Shape:')
         shape_label.grid(row=0, column=2, sticky=tk.W)
 
         self.shape_var = tk.StringVar()
@@ -120,16 +121,16 @@ class MapPage(tk.Frame):
         for i, shape in enumerate(shapes):
             radio = ttk.Radiobutton(radiobutton_frame, text=shape,
                                     variable=self.shape_var, value=shape)
-            radio.grid(row=i + 1, column=2, sticky=tk.W)
+            radio.grid(row=i + 1, column=2, sticky=tk.W, padx=10)
             self.shape_radios.append(radio)
 
         # Update the canvas scroll region
         radiobutton_frame.update_idletasks()
         canvas.config(scrollregion=canvas.bbox('all'))
 
-        self.apply_button = ttk.Button(self.filter_frame, text='Apply Filter', command=self.apply_filter)
+        self.apply_button = tk.Button(self.filter_frame, text='Apply Filter', command=self.apply_filter)
         self.apply_button.grid(row=5, column=0, columnspan=3, padx=5, pady=5, sticky=tk.W)
-        self.clear_button = ttk.Button(self.filter_frame, text='Clear Filter', command=self.clear_filter)
+        self.clear_button = tk.Button(self.filter_frame, text='Clear Filter', command=self.clear_filter)
         self.clear_button.grid(row=5, column=0, columnspan=3, padx=5, pady=5, sticky=tk.E)
 
         # Results listbox
@@ -190,7 +191,7 @@ class MapPage(tk.Frame):
         else:
             for index, row in data.iterrows():
                 self.results_listbox.insert(tk.END, f"Report No. {row['report_no']} - "
-                                                    f"{row['country']} - {row['year_found']} - {row['UFO_shape']}")
+                                            f"{row['country']} - {row['year_found']} - {row['UFO_shape']}")
 
     def update_map_markers(self, filtered_data: pd.DataFrame):
         """
@@ -211,8 +212,8 @@ class MapPage(tk.Frame):
         Delete all map markers.
         """
         self.progress.start()
-        label = ttk.Label(self.filter_frame, text="Filtering might take some time. Please be patient. :)",
-                          wraplength=200)
+        label = tk.Label(self.filter_frame, text="Filtering might take some time. Please be patient. :)",
+                         wraplength=200)
         label.grid(row=4, column=0)
         self.apply_button.configure(state='disabled')
         self.clear_button.configure(state='disabled')
@@ -264,7 +265,7 @@ class MapPage(tk.Frame):
             reported_label.grid(row=1, column=0, sticky=tk.W)
 
             duration_label = ttk.Label(self.full_info_frame, text=f"Duration: "
-                                                                  f"{row['length_of_encounter_seconds']} seconds")
+                                       f"{row['length_of_encounter_seconds']} seconds")
             duration_label.grid(row=2, column=0, sticky=tk.W)
 
             location_label = ttk.Label(self.full_info_frame, text=f"Location: {row['location']}, {row['country']}")
@@ -306,8 +307,8 @@ class GraphsPage(tk.Frame):
         """
         super().__init__()
         self.parent = parent
-        self.data = self.parent.data_processor.get_ufo_data()
-        self.graph_gen = GraphGenerator(self.data)
+        self.graph_gen = GraphGenerator(self.parent.data_processor)
+        self.configure(bg='#F8F8FF')
         self.init_components()
 
     def init_components(self):
@@ -315,36 +316,38 @@ class GraphsPage(tk.Frame):
         Initialize GUI components.
         """
         # Histogram Frame
-        histogram_frame = tk.LabelFrame(self, text='Distribution of Encounter Durations')
+        histogram_frame = tk.LabelFrame(self, text='Distribution of Encounter Durations', bg='#F8F8FF')
         histogram_frame.grid(row=1, column=0, padx=10, pady=2)
         self.histogram_canvas = tk.Canvas(histogram_frame)
         self.histogram_canvas.pack(expand=True, fill=tk.BOTH, side=tk.TOP)
 
-        histogram_frame2 = tk.LabelFrame(self, text='Distribution of Hour of the Day that Sighting was found')
+        histogram_frame2 = tk.LabelFrame(self, text='Distribution of Hour of the Day that Sighting was found',
+                                         bg='#F8F8FF')
         histogram_frame2.grid(row=1, column=1, padx=10, pady=2)
         self.histogram_canvas2 = tk.Canvas(histogram_frame2)
         self.histogram_canvas2.pack(expand=True, fill=tk.BOTH, side=tk.TOP)
 
-
         # Pie Graph Frame
-        pie_graph_frame = tk.LabelFrame(self, text='Pie Chart of different reported UFO shapes (UFO_shape).')
+        pie_graph_frame = tk.LabelFrame(self, text='Pie Chart of different reported UFO shapes (UFO_shape).',
+                                        bg='#F8F8FF')
         pie_graph_frame.grid(row=4, column=0, padx=10, pady=2, columnspan=2)
         self.pie_graph_canvas = tk.Canvas(pie_graph_frame)
         self.pie_graph_canvas.pack(expand=True, fill=tk.BOTH)
 
         # Bar Graph Frame
-        bar_graph_frame = tk.LabelFrame(self, text='Top 5 Cities with the Most Reports')
+        bar_graph_frame = tk.LabelFrame(self, text='Top 5 Cities with the Most Reports', bg='#F8F8FF')
         bar_graph_frame.grid(row=2, column=1, padx=10, pady=2)
         self.bar_graph_canvas = tk.Canvas(bar_graph_frame)
         self.bar_graph_canvas.pack(expand=True, fill=tk.BOTH)
 
         # Line Graph Frame
-        line_graph_frame = tk.LabelFrame(self, text='Trends of Sightings over time')
+        line_graph_frame = tk.LabelFrame(self, text='Trends of Sightings over time', bg='#F8F8FF')
         line_graph_frame.grid(row=2, column=0, padx=10, pady=2, sticky=tk.NSEW)
         self.line_graph_canvas = tk.Canvas(line_graph_frame)
         self.line_graph_canvas.pack(expand=True, fill=tk.BOTH)
 
-        stats_button = CreateButton(self).button(img1='stats_2.png', img2='stats_1.png', bg='white', command=self.statistic_popup)
+        stats_button = CreateButton(self).button(img1='stats_2.png', img2='stats_1.png',
+                                                 bg='#F8F8FF', command=self.statistic_popup)
         stats_button.grid(row=0, column=0, sticky=tk.W, padx=165, columnspan=2)
         self.create_and_display_graphs()
 
@@ -360,36 +363,27 @@ class GraphsPage(tk.Frame):
         """
         Create and display graphs.
         """
-        fig_hist1, ax_hist1 = self.graph_gen.generate_histogram(attribute='length_of_encounter_seconds',
-                                                                xlabel='Length of Encounter',
-                                                                ylabel='Frequency',
-                                                                title='',
-                                                                color='skyblue')
+        fig_hist1, ax_hist1 = self.graph_gen.generate_histogram1()
         hist1_canvas = FigureCanvasTkAgg(fig_hist1, master=self.histogram_canvas)
         hist1_canvas.draw()
         hist1_canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
 
-        fig_hist2, ax_hist2 = self.graph_gen.generate_histogram(attribute='hour', xlabel='Hour of the Day',
-                                                                ylabel='Frequency',
-                                                                title='',
-                                                                color='pink')
+        fig_hist2, ax_hist2 = self.graph_gen.generate_histogram2()
         hist2_canvas = FigureCanvasTkAgg(fig_hist2, master=self.histogram_canvas2)
         hist2_canvas.draw()
         hist2_canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
 
-        fig_pie, ax_pie = self.graph_gen.generate_pie_chart_ufo_shape('UFO_shape', '')
+        fig_pie, ax_pie = self.graph_gen.generate_pie_chart_ufo_shape()
         pie_canvas = FigureCanvasTkAgg(fig_pie, master=self.pie_graph_canvas)
         pie_canvas.draw()
         pie_canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
 
-        fig_bar, ax_bar = self.graph_gen.generate_top_cities_bar_chart('location')
+        fig_bar, ax_bar = self.graph_gen.generate_top_cities_bar_chart()
         bar_canvas = FigureCanvasTkAgg(fig_bar, master=self.bar_graph_canvas)
         bar_canvas.draw()
         bar_canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
 
-        fig_line, ax_line = self.graph_gen.generate_line_graph(x_column='year_found', y_column=None,
-                                                               title='', xlabel='Year',
-                                                               ylabel='Sightings', color='purple')
+        fig_line, ax_line = self.graph_gen.generate_year_line()
         line_canvas = FigureCanvasTkAgg(fig_line, master=self.line_graph_canvas)
         line_canvas.draw()
         line_canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
@@ -407,7 +401,7 @@ class GraphsPage(tk.Frame):
         self.column_var = tk.StringVar()
         column_combobox = ttk.Combobox(popup_window, textvariable=self.column_var)
         column_combobox.pack()
-        column_combobox['values'] = self.get_numerical_columns()
+        column_combobox['values'] = self.parent.data_processor.get_numerical_columns()
 
         column_combobox.bind("<<ComboboxSelected>>", self.display_statistics)
 
@@ -415,22 +409,16 @@ class GraphsPage(tk.Frame):
         self.statistics_label.pack()
 
         scatter_plot_frame = tk.LabelFrame(popup_window,
-                                           text='Scatter Plot of Length of Encounter and Distance to nearest airport')
+                                           text='Correlation of Length of Encounter and Distance to nearest airport')
         scatter_plot_frame.pack()
         self.scatter_plot_canvas = tk.Canvas(scatter_plot_frame)
         self.scatter_plot_canvas.pack()
-        fig_scatter, ax_scatter = self.graph_gen.generate_scatter_plot(x_column='length_of_encounter_seconds',
-                                                                       y_column='distance_to_nearest_airport_km',
-                                                                       title='',
-                                                                       xlabel='Length of Encounter',
-                                                                       ylabel='Distance to nearest airport',
-                                                                       color=('hotpink', 'blue'))
+        fig_scatter, ax_scatter = self.graph_gen.generate_correlation_graph()
         fig_scatter.set_size_inches(5, 3.5)
         scatter_canvas = FigureCanvasTkAgg(fig_scatter, master=self.scatter_plot_canvas)
         scatter_canvas.draw()
         scatter_canvas.get_tk_widget().pack(expand=True, fill=tk.BOTH)
         plt.tight_layout()
-
 
     def display_statistics(self, event):
         """
@@ -438,19 +426,9 @@ class GraphsPage(tk.Frame):
         """
         selected_column = self.column_var.get()
         if selected_column:
-            self.statistics_label.config(text=self.calculate_statistics(selected_column))
+            self.statistics_label.config(text=self.parent.data_processor.calculate_statistics(selected_column))
 
-    def get_numerical_columns(self):
-        """
-        :returns: a list of numerical column names from the DataFrame.
-        """
-        return self.data.select_dtypes(include='float').columns.tolist()
 
-    def calculate_statistics(self, column):
-        """
-        Calculates summary statistics for a given column in the DataFrame.
-        """
-        return self.data[column].describe().to_string()
 
 
 class CreateYourOwnGraphPage(tk.Frame):
@@ -465,19 +443,19 @@ class CreateYourOwnGraphPage(tk.Frame):
         """
         super().__init__()
         self.parent = parent
-        self.data = self.parent.data_processor.get_ufo_data()
-        self.graph_gen = GraphGenerator(self.data)
+        self.graph_gen = GraphGenerator(self.parent.data_processor)
+        self.configure(bg='#F8F8FF')
         self.init_components()
 
     def init_components(self):
         """
         Initialize GUI components.
         """
-        label = tk.Label(self, text='Create your own Graph!', font=('Helvetica', 15))
+        label = tk.Label(self, text='Create your own Graph!', font=('Helvetica', 15), bg='#F8F8FF')
         label.grid(row=0, column=0, pady=10, columnspan=2)
 
         self.graph_type_var = tk.StringVar()
-        graph_type_label = ttk.Label(self, text='Graph Type:')
+        graph_type_label = tk.Label(self, text='Graph Type:', bg='#F8F8FF')
         graph_type_label.grid(row=1, column=0)
         graph_types = ['Bar Graph', 'Histogram', 'Pie Chart', 'Line Graph', 'Scatter Plot']
         self.graph_type_combobox = ttk.Combobox(self, textvariable=self.graph_type_var, values=graph_types)
@@ -486,7 +464,7 @@ class CreateYourOwnGraphPage(tk.Frame):
         self.graph_type_combobox.grid(row=2, column=0)
 
         self.attribute_count_var = tk.StringVar()
-        attribute_count_label = ttk.Label(self, text='Attribute Count:')
+        attribute_count_label = tk.Label(self, text='Attribute Count:', bg='#F8F8FF')
         attribute_count_label.grid(row=3, column=0)
         attribute_counts = ['1', '2']
         self.attribute_count_combobox = ttk.Combobox(self, textvariable=self.attribute_count_var,
@@ -495,28 +473,30 @@ class CreateYourOwnGraphPage(tk.Frame):
         self.attribute_count_combobox.grid(row=4, column=0)
 
         self.x_column_var = tk.StringVar()
-        self.x_column_label = ttk.Label(self, text='Attribute 1 (X-axis):')
-        columns = list(self.data.columns)
+        self.x_column_label = tk.Label(self, text='Attribute 1 (X-axis):', bg='#F8F8FF')
+        columns = self.parent.data_processor.get_ufo_columns()
         self.x_column_combobox = ttk.Combobox(self, textvariable=self.x_column_var, values=columns)
 
         self.y_column_var = tk.StringVar()
-        self.y_column_label = ttk.Label(self, text='Attribute 2 (Y-axis):')
+        self.y_column_label = tk.Label(self, text='Attribute 2 (Y-axis):', bg='#F8F8FF')
         self.y_column_combobox = ttk.Combobox(self, textvariable=self.y_column_var, values=columns)
 
         self.color_var = tk.StringVar()
-        self.color_label = ttk.Label(self, text='Graph Color:')
+        self.color_label = tk.Label(self, text='Graph Color:', bg='#F8F8FF')
         self.color_combobox = ttk.Combobox(self, textvariable=self.color_var,
                                            values=['blue', 'green', 'red', 'yellow'])
         self.color_label.grid(row=1, column=1)
         self.color_combobox.grid(row=2, column=1)
 
         self.legend_var = tk.BooleanVar(value=True)  # Default to True
-        self.legend_checkbutton = tk.Checkbutton(self, text='Show Legend', variable=self.legend_var)
+        self.legend_checkbutton = tk.Checkbutton(self, text='Show Legend', variable=self.legend_var, bg='#F8F8FF')
 
-
-        create_button = tk.Button(self, text='Create Graph', command=self.create_graph)
-        create_button.bind('<Button-1>', self.error_handling)
+        create_button = tk.Button(self, text='Create Graph', command=self.error_handling)
         create_button.grid(row=4, column=1, rowspan=3, pady=10)
+
+        export_button = CreateButton(self).button(img1='export_1.png', img2='export_2.png',
+                                                  bg='#F8F8FF',command=self.export_graph)
+        export_button.grid(row=20, column=0, sticky=tk.W, padx=170, columnspan=2)
 
         self.graph_canvas = tk.Canvas(self, bg='white', width=600, height=400)
         self.graph_canvas.grid(row=15, column=0, columnspan=2, sticky=tk.NSEW)
@@ -531,13 +511,15 @@ class CreateYourOwnGraphPage(tk.Frame):
         """
         Generate the selected graph based on user inputs.
         """
+        attribute_count = self.attribute_count_var.get()
         graph_type = self.graph_type_var.get()
         x_column = self.x_column_var.get()
         y_column = self.y_column_var.get() if self.y_column_var.get() else None
         color = self.color_var.get()
         show_legend = self.legend_var.get()
 
-        plt.figure(figsize=(6, 4))
+        if attribute_count == "1":
+            y_column = None
 
         if graph_type == 'Histogram':
             self.graph_gen.generate_histogram(attribute=x_column, xlabel=x_column, ylabel='Frequency',
@@ -616,7 +598,7 @@ class CreateYourOwnGraphPage(tk.Frame):
             self.y_column_label.grid(row=7, column=0)
             self.y_column_combobox.grid(row=8, column=0)
 
-    def error_handling(self, event):
+    def error_handling(self):
         """
         Handle errors during graph creation.
         """
@@ -641,6 +623,8 @@ class CreateYourOwnGraphPage(tk.Frame):
         elif color == '':
             tk.messagebox.showerror('Error', 'Please fill in all the empty fields.')
             self.color_combobox.focus_set()
+        else:
+            self.create_graph()
 
     def display_graph(self):
         """
@@ -651,6 +635,20 @@ class CreateYourOwnGraphPage(tk.Frame):
         self.fig.canvas = FigureCanvasTkAgg(self.fig, master=self.graph_canvas)
         self.fig.canvas.draw()
         self.fig.canvas.get_tk_widget().grid(row=0, column=0, sticky=tk.NSEW)
+
+    def export_graph(self):
+        """
+        Export the generated graph.
+        """
+        try:
+            filename = asksaveasfile(initialfile='Untitled.png', defaultextension=".png",
+                                     filetypes=[("Portable Graphics Format", "*.png")])
+            if filename:
+                # Save the current figure to the file
+                self.fig.savefig(filename.name)
+                messagebox.showinfo("Success", "Graph exported successfully!")
+        except Exception as e:
+            messagebox.showerror("Error", f"Error occurred while exporting the graph: {str(e)}")
 
 
 class ReportPage(tk.Frame):
@@ -666,20 +664,21 @@ class ReportPage(tk.Frame):
         super().__init__()
         self.parent = parent
         self.data_processor = self.parent.data_processor
+        self.configure(bg='#F8F8FF')
         self.init_components()
 
     def init_components(self):
         """
         Initialize GUI components.
         """
-        date_label = ttk.Label(self, text='Date and Time Found (MM/DD/YYYY HH:MM):')
+        date_label = tk.Label(self, text='Date and Time Found (MM/DD/YYYY HH:MM):',bg ='#F8F8FF')
         date_label.grid(row=0, column=0, padx=10, pady=5, sticky=tk.W)
         self.date_time_input = tk.StringVar()
         self.date_time_entry = ttk.Entry(self, textvariable=self.date_time_input)
         self.date_time_entry.grid(row=0, column=1, padx=10, pady=5, sticky=tk.W)
 
         # Country
-        country_label = ttk.Label(self, text='Country:')
+        country_label = tk.Label(self, text='Country:', bg='#F8F8FF')
         country_label.grid(row=1, column=0, padx=10, pady=5, sticky=tk.W)
         self.country_input = tk.StringVar()
         self.country_entry = ttk.Combobox(self, textvariable=self.country_input)
@@ -688,14 +687,14 @@ class ReportPage(tk.Frame):
         self.country_entry.grid(row=1, column=1, padx=10, pady=5, sticky=tk.W)
 
         # Location
-        location_label = ttk.Label(self, text='City/Location:')
+        location_label = tk.Label(self, text='City/Location:', bg='#F8F8FF')
         location_label.grid(row=2, column=0, padx=10, pady=5, sticky=tk.W)
         self.location_input = tk.StringVar()
         self.location_entry = ttk.Entry(self, textvariable=self.location_input)
         self.location_entry.grid(row=2, column=1, padx=10, pady=5, sticky=tk.W)
 
         # Latitude
-        latitude_label = tk.Label(self, text='Latitude:')
+        latitude_label = tk.Label(self, text='Latitude:', bg='#F8F8FF')
         latitude_label.grid(row=4, column=0, padx=10, pady=5, sticky=tk.W)
         self.lat_input = tk.StringVar()
         self.latitude_entry = tk.Entry(self, textvariable=self.lat_input, state='disabled')
@@ -703,7 +702,7 @@ class ReportPage(tk.Frame):
         self.latitude_entry.grid(row=4, column=1, padx=10, pady=5, sticky=tk.W)
 
         # Longitude
-        longitude_label = tk.Label(self, text='Longitude:')
+        longitude_label = tk.Label(self, text='Longitude:', bg='#F8F8FF')
         longitude_label.grid(row=10, column=0, padx=10, pady=5, sticky=tk.W)
         self.long_input = tk.StringVar()
         self.longitude_entry = tk.Entry(self, textvariable=self.long_input, state='disabled')
@@ -711,27 +710,28 @@ class ReportPage(tk.Frame):
         self.longitude_entry.grid(row=10, column=1, padx=10, pady=5, sticky=tk.W)
 
         # UFO Shape
-        ufo_shape_label = tk.Label(self, text='UFO Shape:')
+        ufo_shape_label = tk.Label(self, text='UFO Shape:', bg='#F8F8FF')
         ufo_shape_label.grid(row=11, column=0, padx=10, pady=5, sticky=tk.W)
         self.ufo_shape_input = tk.StringVar()
         self.ufo_shape_entry = tk.Entry(self, textvariable=self.ufo_shape_input)
         self.ufo_shape_entry.grid(row=11, column=1, padx=10, pady=5, sticky=tk.W)
 
         # Length of Encounter
-        length_of_encounter_label = tk.Label(self, text='Length of Encounter (seconds):')
+        length_of_encounter_label = tk.Label(self, text='Length of Encounter (seconds):', bg='#F8F8FF')
         length_of_encounter_label.grid(row=12, column=0, padx=10, pady=5, sticky=tk.W)
         self.length_of_encounter_input = tk.StringVar()
         self.length_of_encounter_entry = tk.Entry(self, textvariable=self.length_of_encounter_input)
         self.length_of_encounter_entry.grid(row=12, column=1, padx=10, pady=5, sticky=tk.W)
 
         # Description
-        description_label = tk.Label(self, text='Description:')
+        description_label = tk.Label(self, text='Description:', bg='#F8F8FF')
         description_label.grid(row=13, column=0, padx=10, pady=5, sticky=tk.W)
         self.description_entry = tk.Text(self, height=5, width=30)
         self.description_entry.grid(row=13, column=1, padx=10, pady=5, sticky=tk.W)
 
         # Submit Button
-        submit_button = tk.Button(self, text='Submit', command=self.submit_report)
+        submit_button = CreateButton(self).button(img1='submit_1.png', img2='submit_2.png',
+                                                  bg='#F8F8FF', command=self.submit_report)
         submit_button.grid(row=14, column=0, columnspan=2, padx=10, pady=10)
 
         self.create_map_frame()
@@ -759,7 +759,7 @@ class ReportPage(tk.Frame):
         """
         Create the frame for displaying the map.
         """
-        self.map_frame = tk.LabelFrame(self, text='Select Location')
+        self.map_frame = tk.LabelFrame(self, text='Select Location', bg='#F8F8FF')
 
         # Add the MapView widget to the map frame
         self.map_view = TkinterMapView(self.map_frame)
@@ -810,12 +810,14 @@ class ReportPage(tk.Frame):
                 date_time = datetime.datetime.strptime(date_time_str, '%m/%d/%Y %H:%M')
             except ValueError:
                 tk.messagebox.showerror('Error',
-                                        'Invalid date and time format. Please enter in MM/DD/YYYY HH:MM format.')
+                                        'Invalid date and time format. '
+                                        'Please enter in MM/DD/YYYY HH:MM format.')
                 return
             try:
                 length_of_encounter_seconds = float(length_of_encounter_seconds)
             except ValueError:
-                tk.messagebox.showerror('Error', 'The "Encounter Duration" must contain only numerical values.')
+                tk.messagebox.showerror('Error',
+                                        'The "Encounter Duration" must contain only numerical values.')
                 return
 
         tk.messagebox.showinfo('Report submitted', 'Report submitted successfully!')
@@ -834,18 +836,19 @@ class UFOApp(tk.Tk):
         :param data_processor: An instance of UFODataProcessor for data processing.
         """
         super().__init__()
-        icon = ImageTk.PhotoImage(Image.open(os.path.join(os.getcwd(), 'images', 'marker_icon.png')).resize((40, 40)))
-        self.wm_iconphoto(False, icon)
+        image = Image.open(os.path.join(os.getcwd(), 'images', 'marker_icon.png')).resize((40, 40))
+        self.icon = ImageTk.PhotoImage(image)
+        self.wm_iconphoto(False, self.icon)
         self.protocol("WM_DELETE_WINDOW", self.on_close)
         self.title('UFORadarSEA')
         self.data_processor = data_processor
+        self.configure(bg='#354662')
         self.init_components()
 
     def init_components(self):
         """
         Initialize GUI components.
         """
-        self.configure(bg='#354662')
         self.main_menu = tk.Frame(self)
         self.main_canvas = tk.Canvas(self.main_menu, bg='#354662', width=800, height=450, borderwidth=0)
         self.main_canvas.pack(expand=True, fill=tk.BOTH)
@@ -853,22 +856,25 @@ class UFOApp(tk.Tk):
         self.main_bg = ImageTk.PhotoImage(self.image)
         self.main_canvas.create_image(0, 0, image=self.main_bg, anchor=tk.NW)
 
-        self.view_map_button = CreateButton(self.main_menu).button(img1='map_2.png', img2='map_1.png', bg='#87919c',command=self.show_map_page)
+        self.view_map_button = CreateButton(self.main_menu).button(img1='map_2.png', img2='map_1.png',
+                                                                   bg='#87919c',command=self.show_map_page)
         self.graphs_button = CreateButton(self.main_menu).button(img1='graphs_2.png', img2='graphs_1.png',
-                                                  bg='#d1cfc3', command=self.show_graphs_page)
-        self.file_report_button = CreateButton(self.main_menu).button(img1='report_2.png', img2='report_1.png', bg='#c7c5b8',command=self.show_report_page)
+                                                                 bg='#d1cfc3', command=self.show_graphs_page)
+        self.file_report_button = CreateButton(self.main_menu).button(img1='report_2.png', img2='report_1.png',
+                                                                      bg='#c7c5b8',command=self.show_report_page)
         self.button1_canvas = self.main_canvas.create_window(335, 200,
-                                               anchor="nw",
-                                               window=self.view_map_button)
+                                                             anchor=tk.NW,
+                                                             window=self.view_map_button)
 
         self.button2_canvas = self.main_canvas.create_window(335, 275,
-                                               anchor="nw",
-                                               window=self.graphs_button)
+                                                             anchor=tk.NW,
+                                                             window=self.graphs_button)
 
-        self.button3_canvas = self.main_canvas.create_window(335, 350, anchor="nw",
-                                               window=self.file_report_button)
+        self.button3_canvas = self.main_canvas.create_window(335, 350,
+                                                             anchor=tk.NW,
+                                                             window=self.file_report_button)
         self.back_button = CreateButton(self).button(img1='back_2.png', img2='back_1.png',
-                                                              bg='white', command=self.show_main_menu)
+                                                     bg='#F8F8FF', command=self.show_main_menu)
 
         self.main_menu.pack(expand=True)
 
@@ -889,8 +895,8 @@ class UFOApp(tk.Tk):
         """
         self.map_page.pack(expand=True, fill=tk.BOTH)
         self.main_menu.pack_forget()
-        self.configure(bg='white')
-        self.back_button.pack(anchor=tk.W)
+        self.configure(bg='#F8F8FF')
+        self.back_button.pack(anchor=tk.W, expand=True)
 
     def show_report_page(self):
         """
@@ -899,8 +905,8 @@ class UFOApp(tk.Tk):
         self.report_page = ReportPage(self)
         self.report_page.pack(expand=True, fill=tk.BOTH)
         self.main_menu.pack_forget()
-        self.configure(bg='white')
-        self.back_button.pack(anchor=tk.W)
+        self.configure(bg='#F8F8FF')
+        self.back_button.pack(anchor=tk.W, expand=True)
 
     def show_graphs_page(self):
         """
@@ -910,9 +916,12 @@ class UFOApp(tk.Tk):
         self.graphs_page.pack(expand=True, fill=tk.BOTH)
         self.main_menu.pack_forget()
         self.user_create_graph_page.pack_forget()
-        self.configure(bg='white')
-        self.back_button.pack(anchor=tk.W)
-        create_graph_button = CreateButton(self.graphs_page).button(img1='create_graph2.png', img2='create_graph1.png', bg='white', command=self.show_user_create_graph_page)
+        self.configure(bg='#F8F8FF')
+        self.back_button.pack(anchor=tk.W, expand=True)
+        create_graph_button = CreateButton(self.graphs_page).button(img1='create_graph2.png',
+                                                                    img2='create_graph1.png',
+                                                                    bg='#F8F8FF',
+                                                                    command=self.show_user_create_graph_page)
         create_graph_button.grid(row=0, column=0, sticky=tk.W)
 
     def show_main_menu(self):
@@ -922,6 +931,7 @@ class UFOApp(tk.Tk):
         if not self.main_menu.winfo_ismapped():  # Check if main menu is not already mapped
             self.main_menu.pack(expand=True)
             self.configure(bg='#354662')
+            matplotlib.pyplot.close('all')
         self.map_page.pack_forget()
         self.graphs_page.pack_forget()
         self.report_page.pack_forget()
@@ -934,15 +944,15 @@ class UFOApp(tk.Tk):
         self.graphs_page.pack_forget()
         self.back_button.pack_forget()
         self.user_create_graph_page.pack(expand=True, fill=tk.BOTH)
-        self.back_to_graph = tk.Button(self.user_create_graph_page, text='Back to Graphs', command=self.show_graphs_page)
+        self.back_to_graph = CreateButton(self.user_create_graph_page).button(img1='back_graph_1.png',
+                                                                              img2='back_graph_2.png',
+                                                                              bg='#F8F8FF',
+                                                                              command=self.show_graphs_page)
         self.back_to_graph.grid(row=20, column=0, sticky=tk.W)
 
     def on_close(self):
-        self.image.close()
-        matplotlib.pyplot.close()
+        matplotlib.pyplot.close('all')
         self.quit()
-
-
 
     def run(self):
         """
