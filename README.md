@@ -70,7 +70,7 @@ python main.py
 ## Project Documents
 - [Project Proposal](https://docs.google.com/document/d/1GFq37PgfiIjOqS0eIJ-mXynBxVIFKtayDh9qsmJY22A/edit?usp=sharing)
 - [Development Plan](../../wiki/Development%20Plan)
-- [Sequence Diagram and UML Diagram](../../wiki/Sequence%20Diagram%20and%20UML%20Diagram)
+- [UML Diagrams](../../wiki/UML%20Diagrams)
 
 ## Data Sources
 The UFO Radar Application uses UFO sighting data sourced from [NUFORC](https://www.nuforc.org/) (National UFO Reporting Center) and The Global Airport Database (GADB) data by [Arash Partow](https://www.partow.net/miscellaneous/airportdatabase/).
