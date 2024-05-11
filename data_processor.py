@@ -3,13 +3,13 @@ import os
 import datetime
 from math import radians, sin, cos, sqrt, atan2
 import pandas as pd
+import numpy as np
 
 
 class UFODataProcessor:
     """
     A class for processing UFO data.
     """
-
     def __init__(self, ufo_reports_file, airports_file):
         """
         Initialize UFODataProcessor class.
@@ -21,6 +21,8 @@ class UFODataProcessor:
         """
         self.ufo_reports = pd.read_csv(ufo_reports_file)
         self.airports = pd.read_csv(airports_file)
+        # Avoid Future Warning Error
+        self.ufo_reports = self.ufo_reports.replace([np.inf, -np.inf], np.nan)
         self.new_row = {}
 
     def get_ufo_data(self) -> pd.DataFrame:
@@ -30,7 +32,22 @@ class UFODataProcessor:
         :return: DataFrame containing UFO sighting data.
         :rtype: pandas.DataFrame
         """
-        return self.ufo_reports
+        return self.ufo_reports.copy()
+
+    def get_ufo_columns(self) -> list:
+        return self.ufo_reports.columns.tolist()
+
+    def get_numerical_columns(self) -> list:
+        """
+        :returns: a list of numerical column names from the DataFrame.
+        """
+        return self.ufo_reports.select_dtypes(include='float').columns.tolist()
+
+    def calculate_statistics(self, column) -> str:
+        """
+        Calculates summary statistics for a given column in the DataFrame.
+        """
+        return self.ufo_reports[column].describe().to_string()
 
     def find_nearest_airport(self, latitude: float, longitude: float, airport_data: pd.DataFrame) -> float:
         """
@@ -139,7 +156,7 @@ class UFODataProcessor:
         :rtype: float
         """
         # Radius of the Earth in kilometers
-        R = 6371.0
+        r = 6371.0
 
         # Convert latitude and longitude from degrees to radians
         lat1 = radians(float(lat1))
@@ -155,7 +172,7 @@ class UFODataProcessor:
         a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
         c = 2 * atan2(sqrt(a), sqrt(1 - a))
 
-        distance = R * c  # Distance in kilometers
+        distance = r * c  # Distance in kilometers
         return distance
 
 
