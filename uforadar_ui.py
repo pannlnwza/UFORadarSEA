@@ -123,9 +123,6 @@ class MapPage(tk.Frame):
                                     variable=self.shape_var, value=shape)
             radio.grid(row=i + 1, column=2, sticky=tk.W, padx=10)
             self.shape_radios.append(radio)
-
-        # Update the canvas scroll region
-        radiobutton_frame.update_idletasks()
         canvas.config(scrollregion=canvas.bbox('all'))
 
         self.apply_button = tk.Button(self.filter_frame, text='Apply Filter', command=self.apply_filter)

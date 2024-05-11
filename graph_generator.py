@@ -3,7 +3,6 @@ import seaborn as sns
 import matplotlib.ticker as ticker
 from data_processor import UFODataProcessor
 import matplotlib
-matplotlib.use('TkAgg')
 
 
 class GraphGenerator:
