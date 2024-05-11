@@ -266,7 +266,8 @@ class MapPage(tk.Frame):
                                        f"{row['length_of_encounter_seconds']} seconds")
             duration_label.grid(row=2, column=0, sticky=tk.W)
 
-            location_label = ttk.Label(self.full_info_frame, text=f"Location: {row['location']}, {row['country']}")
+            location_label = ttk.Label(self.full_info_frame, text=f"Location: {row['location']}, "
+                                                                  f"{row['country']}")
             location_label.grid(row=3, column=0, sticky=tk.W)
 
             lat_label = ttk.Label(self.full_info_frame, text=f"Latitude: {row['latitude']}")
@@ -407,7 +408,8 @@ class GraphsPage(tk.Frame):
         self.statistics_label.pack()
 
         scatter_plot_frame = tk.LabelFrame(popup_window,
-                                           text='Correlation of Length of Encounter and Distance to nearest airport')
+                                           text='Correlation of Length of Encounter '
+                                                'and Distance to nearest airport')
         scatter_plot_frame.pack()
         self.scatter_plot_canvas = tk.Canvas(scatter_plot_frame)
         self.scatter_plot_canvas.pack()
@@ -677,7 +679,7 @@ class ReportPage(tk.Frame):
         country_label = tk.Label(self, text='Country:', bg='#F8F8FF')
         country_label.grid(row=1, column=0, padx=10, pady=5, sticky=tk.W)
         self.country_input = tk.StringVar()
-        self.country_entry = ttk.Combobox(self, textvariable=self.country_input)
+        self.country_entry = ttk.Combobox(self, textvariable=self.country_input, state='readonly')
         self.country_entry.bind("<<ComboboxSelected>>", self.set_map_country)
         self.set_country_combobox_value()
         self.country_entry.grid(row=1, column=1, padx=10, pady=5, sticky=tk.W)
