@@ -6,7 +6,6 @@ from PIL import Image, ImageTk
 class CreateButton:
     def __init__(self, parent):
         self.parent = parent
-        self.buttons = []
 
     def button(self, img1, img2, bg, command):
         current_dir = os.getcwd()
@@ -14,6 +13,7 @@ class CreateButton:
         image_2 = ImageTk.PhotoImage(Image.open(os.path.join(current_dir, 'images', img2)))
 
         btn = tk.Button(self.parent, image=image_1,
+                        highlightthickness=0,
                         borderwidth=0,
                         cursor='hand2',
                         command=command,
@@ -23,12 +23,12 @@ class CreateButton:
         btn.image_2 = image_2
         btn.bind("<Enter>", lambda event, button=btn: self.on_enter(button))
         btn.bind("<Leave>", lambda event, button=btn: self.on_leave(button))
-
-        self.buttons.append(btn)
         return btn
 
-    def on_leave(self, button):
+    @staticmethod
+    def on_leave(button):
         button['image'] = button.image_1
 
-    def on_enter(self, button):
+    @staticmethod
+    def on_enter(button):
         button['image'] = button.image_2
