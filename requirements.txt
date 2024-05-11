@@ -1,5 +1,7 @@
-future~=1.0.0
-matplotlib~=3.8.3
-pandas~=2.2.1
-tkintermapview~=1.29
-pillow~=10.2.0
+future>=1.0.0
+pillow>=10.2.0
+numpy>=1.26.4
+pandas>=2.2.1
+matplotlib>=3.8.3
+seaborn>=0.13.2
+tkintermapview>=1.29
