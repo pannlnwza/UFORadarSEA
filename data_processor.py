@@ -3,7 +3,6 @@ import os
 import datetime
 from math import radians, sin, cos, sqrt, atan2
 import pandas as pd
-import numpy as np
 
 
 class UFODataProcessor:
@@ -21,8 +20,6 @@ class UFODataProcessor:
         """
         self.ufo_reports = pd.read_csv(ufo_reports_file)
         self.airports = pd.read_csv(airports_file)
-        # Avoid Future Warning Error
-        self.ufo_reports = self.ufo_reports.replace([np.inf, -np.inf], np.nan)
         self.new_row = {}
 
     def get_ufo_data(self) -> pd.DataFrame:
@@ -177,6 +174,7 @@ class UFODataProcessor:
 
 
 class Country(enum.Enum):
+    """A class representing countries with their information."""
     BRUNEI = ['Brunei', 'BRN', 4.5, 114.6667]
     CAMBODIA = ['Cambodia', 'KHM', 13.0, 105.0]
     EAST_TIMOR = ['East Timor', 'TLS', -8.55, 125.5167]
@@ -191,6 +189,16 @@ class Country(enum.Enum):
 
     @classmethod
     def find_val(cls, country_name, index):
+        """
+        Find a specific value of a country by name and index.
+
+        :param country_name: The name of the country to search for.
+        :type country_name: str
+        :param index: The index of the value to retrieve.
+        :type index: int
+        :return: The value of the country at the specified index, or None if not found.
+        :rtype: Any
+        """
         for country in cls:
             if country.value[0].lower() == country_name.lower():
                 return country.value[index]

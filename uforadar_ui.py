@@ -1,18 +1,19 @@
-import os
 import datetime
+import os
 import tkinter as tk
+import tkinter.messagebox as messagebox
+from tkinter import ttk
+from tkinter.filedialog import asksaveasfile
 import matplotlib
-matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
-from tkinter import ttk, messagebox
-import pandas as pd
-from tkintermapview import TkinterMapView
-from graph_generator import GraphGenerator
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from data_processor import UFODataProcessor, Country
+import pandas as pd
 from PIL import Image, ImageTk
 from button import CreateButton
-from tkinter.filedialog import asksaveasfile
+from data_processor import UFODataProcessor, Country
+from graph_generator import GraphGenerator
+from tkintermapview import TkinterMapView
+matplotlib.use('TkAgg')
 
 
 class MapPage(tk.Frame):
@@ -27,8 +28,8 @@ class MapPage(tk.Frame):
         super().__init__()
         self.parent = parent
         self.data = self.parent.data_processor.get_ufo_data()
-        image = Image.open(os.path.join(os.getcwd(), 'images', 'marker_icon.png')).resize((40, 40))
-        self.MARKER_ICON = ImageTk.PhotoImage(image)
+        self.image = Image.open(os.path.join(os.getcwd(), 'images', 'marker_icon.png')).resize((40, 40))
+        self.marker_icon = ImageTk.PhotoImage(self.image)
         self.configure(bg='#F8F8FF')
         self.init_components()
 
@@ -50,7 +51,7 @@ class MapPage(tk.Frame):
         self.add_sighting_markers()
 
         title = tk.Label(self, text='UFORadarSEA', font=('Helvetica', 20, 'bold'), bg='#F8F8FF')
-        title.grid(row=0, column=1, pady=5,sticky=tk.S)
+        title.grid(row=0, column=1, pady=5, sticky=tk.S)
         description = tk.Label(self, text='An interactive map to track UFO sightings.', bg='#F8F8FF')
         description.grid(row=1, column=1, pady=1, sticky=tk.N)
 
@@ -202,7 +203,7 @@ class MapPage(tk.Frame):
             latitude = float(row['latitude'])
             longitude = float(row['longitude'])
             shape = row['UFO_shape']
-            self.map_view.set_marker(latitude, longitude, text=shape, icon=self.MARKER_ICON)
+            self.map_view.set_marker(latitude, longitude, text=shape, icon=self.marker_icon)
 
     def delete_markers(self):
         """
@@ -226,7 +227,7 @@ class MapPage(tk.Frame):
         for index, row in self.data.iterrows():
             latitude = float(row['latitude'])
             longitude = float(row['longitude'])
-            self.map_view.set_marker(latitude, longitude, icon=self.MARKER_ICON)
+            self.map_view.set_marker(latitude, longitude, icon=self.marker_icon)
 
     def show_result_details(self, event):
         """
@@ -426,8 +427,6 @@ class GraphsPage(tk.Frame):
             self.statistics_label.config(text=self.parent.data_processor.calculate_statistics(selected_column))
 
 
-
-
 class CreateYourOwnGraphPage(tk.Frame):
     """
     A frame for creating custom graphs based on UFO sighting data.
@@ -492,7 +491,7 @@ class CreateYourOwnGraphPage(tk.Frame):
         create_button.grid(row=4, column=1, rowspan=3, pady=10)
 
         export_button = CreateButton(self).button(img1='export_1.png', img2='export_2.png',
-                                                  bg='#F8F8FF',command=self.export_graph)
+                                                  bg='#F8F8FF', command=self.export_graph)
         export_button.grid(row=20, column=0, sticky=tk.W, padx=170, columnspan=2)
 
         self.graph_canvas = tk.Canvas(self, bg='white', width=600, height=400)
@@ -668,7 +667,7 @@ class ReportPage(tk.Frame):
         """
         Initialize GUI components.
         """
-        date_label = tk.Label(self, text='Date and Time Found (MM/DD/YYYY HH:MM):',bg ='#F8F8FF')
+        date_label = tk.Label(self, text='Date and Time Found (MM/DD/YYYY HH:MM):', bg='#F8F8FF')
         date_label.grid(row=0, column=0, padx=10, pady=5, sticky=tk.W)
         self.date_time_input = tk.StringVar()
         self.date_time_entry = ttk.Entry(self, textvariable=self.date_time_input)
@@ -740,12 +739,18 @@ class ReportPage(tk.Frame):
             self.grid_rowconfigure(i, weight=1)
 
     def set_country_combobox_value(self):
+        """
+        Set values for the country entry combobox.
+        """
         _list = []
         for country in Country:
             _list.append(country.value[0])
         self.country_entry['value'] = _list
 
     def set_map_country(self, event):
+        """
+        Set the map view to the selected country.
+        """
         country = self.country_input.get()
         lat = Country.find_val(country, 2)
         lon = Country.find_val(country, 3)
@@ -773,7 +778,8 @@ class ReportPage(tk.Frame):
         self.lat_input.set(coordinates_tuple[0])
         self.long_input.set(coordinates_tuple[1])
 
-    def validate_date(self, date_str) -> bool:
+    @staticmethod
+    def validate_date(date_str) -> bool:
         """
         Validate the format of a date string.
 
@@ -833,10 +839,12 @@ class UFOApp(tk.Tk):
         :param data_processor: An instance of UFODataProcessor for data processing.
         """
         super().__init__()
-        image = Image.open(os.path.join(os.getcwd(), 'images', 'marker_icon.png')).resize((40, 40))
-        self.icon = ImageTk.PhotoImage(image)
+        self.icon_image = Image.open(os.path.join(os.getcwd(), 'images', 'marker_icon.png')).resize((40, 40))
+        self.icon = ImageTk.PhotoImage(self.icon_image)
         self.wm_iconphoto(False, self.icon)
         self.protocol("WM_DELETE_WINDOW", self.on_close)
+        self.main_bg_image = Image.open(os.path.join(os.getcwd(), 'images', 'main_bg.png'))
+        self.main_bg = ImageTk.PhotoImage(self.main_bg_image)
         self.title('UFORadarSEA')
         self.data_processor = data_processor
         self.configure(bg='#354662')
@@ -849,16 +857,15 @@ class UFOApp(tk.Tk):
         self.main_menu = tk.Frame(self)
         self.main_canvas = tk.Canvas(self.main_menu, bg='#354662', width=800, height=450, borderwidth=0)
         self.main_canvas.pack(expand=True, fill=tk.BOTH)
-        self.image = Image.open(os.path.join(os.getcwd(), 'images', 'main_bg.png'))
-        self.main_bg = ImageTk.PhotoImage(self.image)
+
         self.main_canvas.create_image(0, 0, image=self.main_bg, anchor=tk.NW)
 
         self.view_map_button = CreateButton(self.main_menu).button(img1='map_2.png', img2='map_1.png',
-                                                                   bg='#87919c',command=self.show_map_page)
+                                                                   bg='#87919c', command=self.show_map_page)
         self.graphs_button = CreateButton(self.main_menu).button(img1='graphs_2.png', img2='graphs_1.png',
                                                                  bg='#d1cfc3', command=self.show_graphs_page)
         self.file_report_button = CreateButton(self.main_menu).button(img1='report_2.png', img2='report_1.png',
-                                                                      bg='#c7c5b8',command=self.show_report_page)
+                                                                      bg='#c7c5b8', command=self.show_report_page)
         self.button1_canvas = self.main_canvas.create_window(335, 200,
                                                              anchor=tk.NW,
                                                              window=self.view_map_button)
@@ -948,6 +955,9 @@ class UFOApp(tk.Tk):
         self.back_to_graph.grid(row=20, column=0, sticky=tk.W)
 
     def on_close(self):
+        """
+        Close the application.
+        """
         matplotlib.pyplot.close('all')
         self.quit()
 
