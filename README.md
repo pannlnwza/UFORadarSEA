@@ -1,7 +1,7 @@
 # UFORadarSEA
 
 ## Description
-The UFORadarSEA is a desktop GUI application built using Python's Tkinter library. It allows users to explore UFO sighting data, create custom graphs based on various attributes, and submit new UFO sighting reports.
+The UFORadarSEA is a desktop GUI application built using Python's Tkinter library. It allows users to explore UFO sighting data in Southeast Asia, create custom graphs based on various attributes, and submit new UFO sighting reports.
 
 ## Main Features
 - View UFO sighting reports on a map. (View Map Page)
@@ -10,8 +10,17 @@ The UFORadarSEA is a desktop GUI application built using Python's Tkinter librar
 - Summary statistics of UFO sightings data, such as counts, mean, median, standard deviation, minimum, and maximum values for different attributes. (Graphs Page)
 - Users can file a report of a UFO sighting. (File a Report Page)
 
+## Requirements
+Requires Python 3.11 or newer. 
+- pillow>=10.2.0
+- numpy>=1.26.4
+- pandas>=2.2.1
+- matplotlib>=3.8.3
+- seaborn>=0.13.2
+- tkintermapview>=1.29
+
 ## Screenshots
-| <img src="./screenshots/main_menu.png" alt="Map page" width="300"/>         | **Home Page**               |
+| <img src="./screenshots/main_menu.png" alt="Map page" width="300"/>         |  **Home Page**              |
 |:----------------------------------------------------------------------------|:----------------------------|
 | <img src="./screenshots/map_view_page.png" alt="Map page" width="300"/>     | **Map Page**                |
 | <img src="./screenshots/graphs_page.png" alt="Map page" width="300"/>       | **Graphs Page**             |
@@ -40,7 +49,7 @@ Activate the virtual environment using one of the following commands, depending 
 - **Windows:**
 
     ```bash
-    .env\Scripts\activate
+    env\Scripts\activate
     ```
 
 - **macOS/Linux:**
@@ -51,13 +60,17 @@ Activate the virtual environment using one of the following commands, depending 
 Once the virtual environment is activated, install the required packages using pip:
 ```bash
 pip install -r requirements.txt
+```
+
+Run the application:
+```bash
 python main.py
 ```
 
 ## Project Documents
-- [Project Proposal](wiki/Project-Proposal.md)
-- [Development Plan](wiki/Development-Plan.md)
-- [UML Diagrams](wiki/UML-Diagrams.md)
+- [Project Proposal](https://docs.google.com/document/d/1GFq37PgfiIjOqS0eIJ-mXynBxVIFKtayDh9qsmJY22A/edit?usp=sharing)
+- [Development Plan](../../wiki/Development%20Plan)
+- [Sequence Diagram and UML Diagram](../../wiki/Sequence%20Diagram%20and%20UML%20Diagram)
 
 ## Data Sources
 The UFO Radar Application uses UFO sighting data sourced from [NUFORC](https://www.nuforc.org/) (National UFO Reporting Center) and The Global Airport Database (GADB) data by [Arash Partow](https://www.partow.net/miscellaneous/airportdatabase/).
